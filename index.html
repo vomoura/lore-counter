@@ -24,28 +24,7 @@
 <div class="splash" id="splash">
   <p class="splash-title">LORE COUNTER</p>
 
-  <svg class="splash-symbol" viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="splashGold" x1="25%" y1="0%" x2="75%" y2="100%">
-        <stop offset="0%"   stop-color="#EDE0B0"/>
-        <stop offset="35%"  stop-color="#D3BA84"/>
-        <stop offset="70%"  stop-color="#B89840"/>
-        <stop offset="100%" stop-color="#8A6A10"/>
-      </linearGradient>
-      <filter id="splashGlow" x="-30%" y="-20%" width="160%" height="140%">
-        <feGaussianBlur stdDeviation="5" result="b"/>
-        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <!-- Outer contour — thick -->
-    <path fill="none" stroke="url(#splashGold)" stroke-width="9" stroke-linejoin="miter" stroke-miterlimit="10"
-      filter="url(#splashGlow)"
-      d="M 110,29 C 128,86 156,136 188,185 C 156,214 128,242 110,263 C 92,242 64,214 32,185 C 64,136 92,86 110,29 Z"/>
-    <!-- Inner contour — thin -->
-    <path fill="none" stroke="url(#splashGold)" stroke-width="2.5" stroke-linejoin="miter" stroke-miterlimit="10"
-      opacity="0.75"
-      d="M 110,55 C 124,97 147,140 173,185 C 147,207 124,230 110,249 C 96,230 73,207 47,185 C 73,140 96,97 110,55 Z"/>
-  </svg>
+  <img class="splash-symbol" src="assets/losango_alongado_illuminary_gold.svg" alt="Lore symbol" draggable="false"/>
 
   <img class="splash-logo" src="assets/DLC_Logo_Medium_RGB.png" alt="Disney Lorcana" draggable="false"/>
 </div>
