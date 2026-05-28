@@ -1,0 +1,19 @@
+{
+  "name": "Lorcana Lore Counter",
+  "short_name": "Lorcana",
+  "description": "Disney Lorcana Lore Counter",
+  "start_url": "/lore-counter/",
+  "scope": "/lore-counter/",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#373B70",
+  "theme_color": "#373B70",
+  "icons": [
+    {
+      "src": "assets/losango_alongado_illuminary_gold.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Lorcana Lore Counter</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1C1C1A" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Lore Counter" />
+  <link rel="apple-touch-icon" href="assets/losango_alongado_illuminary_gold.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- ── PLAYER 2 (top half, rotated 180°) ── -->
+  <div class="half half--p2" id="player2">
+    <div class="half__inner">
+      <div class="counter-row">
+        <button class="btn-circle" data-player="2" data-delta="-1" aria-label="Decrease Player 2">
+          <svg viewBox="0 0 44 44" fill="none">
+            <circle cx="22" cy="22" r="20" stroke="currentColor" stroke-width="1.2"/>
+            <line x1="12" y1="22" x2="32" y2="22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+        <div class="symbol-wrap">
+          <svg class="lore-drop" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 300" fill="none" aria-label="Lore symbol">
+            <path fill="#C8B384" fill-rule="evenodd" d="M 110.00 29.00 C 128.00 86.00, 156.00 136.00, 188.00 185.00 C 156.00 214.00, 128.00 242.00, 110.00 263.00 C 92.00 242.00, 64.00 214.00, 32.00 185.00 C 64.00 136.00, 92.00 86.00, 110.00 29.00 Z M 110.00 55.52 C 124.94 102.83, 148.18 144.33, 174.74 185.00 C 148.18 209.07, 124.94 232.31, 110.00 249.74 C 95.06 232.31, 71.82 209.07, 45.26 185.00 C 71.82 144.33, 95.06 102.83, 110.00 55.52 Z M 110.00 75.80 C 122.60 115.70, 142.20 150.70, 164.60 185.00 C 142.20 205.30, 122.60 224.90, 110.00 239.60 C 97.40 224.90, 77.80 205.30, 55.40 185.00 C 77.80 150.70, 97.40 115.70, 110.00 75.80 Z M 110.00 85.16 C 121.52 121.64, 139.44 153.64, 159.92 185.00 C 139.44 203.56, 121.52 221.48, 110.00 234.92 C 98.48 221.48, 80.56 203.56, 60.08 185.00 C 80.56 153.64, 98.48 121.64, 110.00 85.16 Z"/>
+          </svg>
+          <span class="lore-count" id="count2">0</span>
+        </div>
+
+        <button class="btn-circle" data-player="2" data-delta="1" aria-label="Increase Player 2">
+          <svg viewBox="0 0 44 44" fill="none">
+            <circle cx="22" cy="22" r="20" stroke="currentColor" stroke-width="1.2"/>
+            <line x1="12" y1="22" x2="32" y2="22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="22" y1="12" x2="22" y2="32" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="player-label">JOGADOR 2</div>
+    </div>
+
+    <!-- Dial pinned to bottom of this half -->
+    <div class="dial-wrap">
+      <div class="dial-track" id="dialTrack2">
+        <div class="dial-ticks" id="dialTicks2"></div>
+        <div class="dial-cursor"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DIVIDER ── -->
+  <div class="divider">
+    <svg viewBox="0 0 320 24" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+
+      <!-- Line left segment: from edge to left tip of left diamond -->
+      <line x1="0"   y1="12" x2="114" y2="12" stroke="#D3BA84" stroke-width="0.8" opacity="0.7"/>
+      <!-- Line right segment: from right tip of right diamond to edge -->
+      <line x1="206" y1="12" x2="320" y2="12" stroke="#D3BA84" stroke-width="0.8" opacity="0.7"/>
+
+      <!-- Left elongated diamond (center x=137) -->
+      <path d="M 114,12 L 137,6.5 L 154,12 L 137,17.5 Z"
+            fill="none" stroke="#D3BA84" stroke-width="0.9" stroke-linejoin="miter"/>
+      <path d="M 119,12 L 137,8 L 150,12 L 137,16 Z"
+            fill="none" stroke="#D3BA84" stroke-width="0.5" stroke-linejoin="miter" opacity="0.65"/>
+
+      <!-- Right elongated diamond (center x=183, mirror) -->
+      <path d="M 206,12 L 183,6.5 L 166,12 L 183,17.5 Z"
+            fill="none" stroke="#D3BA84" stroke-width="0.9" stroke-linejoin="miter"/>
+      <path d="M 201,12 L 183,8 L 170,12 L 183,16 Z"
+            fill="none" stroke="#D3BA84" stroke-width="0.5" stroke-linejoin="miter" opacity="0.65"/>
+
+      <!-- Small central diamond -->
+      <path d="M 154,12 L 160,8.5 L 166,12 L 160,15.5 Z"
+            fill="none" stroke="#D3BA84" stroke-width="0.9" stroke-linejoin="miter"/>
+    </svg>
+  </div>
+
+  <!-- ── LORE BUTTON (right edge, centered on divider) ── -->
+  <button class="btn-lore" id="btnLore" aria-label="Lore">
+    <svg class="btn-lore__symbol" viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg">
+      <path fill="#D3BA84" fill-rule="evenodd" d="M 110.00 29.00 C 128.00 86.00, 156.00 136.00, 188.00 185.00 C 156.00 214.00, 128.00 242.00, 110.00 263.00 C 92.00 242.00, 64.00 214.00, 32.00 185.00 C 64.00 136.00, 92.00 86.00, 110.00 29.00 Z"/>
+    </svg>
+    <span class="btn-lore__signs">
+      <span class="btn-lore__plus">+</span>
+      <span class="btn-lore__minus">−</span>
+    </span>
+  </button>
+
+  <!-- ── GAME OVER BUTTON ── -->
+  <div class="gameover-wrap" id="gameoverWrap">
+    <button class="gameover-btn" id="gameoverBtn">
+      FIM DO JOGO <i class="fa-solid fa-chevron-right gameover-chevron"></i>
+    </button>
+  </div>
+
+  <!-- ── PLAYER 1 (bottom half) ── -->
+  <div class="half half--p1" id="player1">
+    <div class="half__inner">
+      <div class="counter-row">
+        <button class="btn-circle" data-player="1" data-delta="-1" aria-label="Decrease Player 1">
+          <svg viewBox="0 0 44 44" fill="none">
+            <circle cx="22" cy="22" r="20" stroke="currentColor" stroke-width="1.2"/>
+            <line x1="12" y1="22" x2="32" y2="22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+        <div class="symbol-wrap">
+          <svg class="lore-drop" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 300" fill="none" aria-label="Lore symbol">
+            <path fill="#C8B384" fill-rule="evenodd" d="M 110.00 29.00 C 128.00 86.00, 156.00 136.00, 188.00 185.00 C 156.00 214.00, 128.00 242.00, 110.00 263.00 C 92.00 242.00, 64.00 214.00, 32.00 185.00 C 64.00 136.00, 92.00 86.00, 110.00 29.00 Z M 110.00 55.52 C 124.94 102.83, 148.18 144.33, 174.74 185.00 C 148.18 209.07, 124.94 232.31, 110.00 249.74 C 95.06 232.31, 71.82 209.07, 45.26 185.00 C 71.82 144.33, 95.06 102.83, 110.00 55.52 Z M 110.00 75.80 C 122.60 115.70, 142.20 150.70, 164.60 185.00 C 142.20 205.30, 122.60 224.90, 110.00 239.60 C 97.40 224.90, 77.80 205.30, 55.40 185.00 C 77.80 150.70, 97.40 115.70, 110.00 75.80 Z M 110.00 85.16 C 121.52 121.64, 139.44 153.64, 159.92 185.00 C 139.44 203.56, 121.52 221.48, 110.00 234.92 C 98.48 221.48, 80.56 203.56, 60.08 185.00 C 80.56 153.64, 98.48 121.64, 110.00 85.16 Z"/>
+          </svg>
+          <span class="lore-count" id="count1">0</span>
+        </div>
+
+        <button class="btn-circle" data-player="1" data-delta="1" aria-label="Increase Player 1">
+          <svg viewBox="0 0 44 44" fill="none">
+            <circle cx="22" cy="22" r="20" stroke="currentColor" stroke-width="1.2"/>
+            <line x1="12" y1="22" x2="32" y2="22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="22" y1="12" x2="22" y2="32" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="player-label">JOGADOR 1</div>
+    </div>
+
+    <!-- Dial pinned to bottom of this half -->
+    <div class="dial-wrap">
+      <div class="dial-track" id="dialTrack1">
+        <div class="dial-ticks" id="dialTicks1"></div>
+        <div class="dial-cursor"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EXCEPTION MODAL (bottom sheet) ── -->
+  <div class="sheet-backdrop" id="sheetBackdrop">
+    <img class="sheet-card-img" id="sheetCardImg" src="assets/exception.jpg" alt="Card exception" draggable="false"/>
+    <div class="sheet" id="sheet">
+      <div class="sheet-handle"></div>
+      <p class="sheet-title">EFEITO DO CARD</p>
+      <svg class="modal-divider" viewBox="0 0 320 24" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <line x1="0"   y1="12" x2="114" y2="12" stroke="#D3BA84" stroke-width="0.8" opacity="0.7"/>
+        <line x1="206" y1="12" x2="320" y2="12" stroke="#D3BA84" stroke-width="0.8" opacity="0.7"/>
+        <path d="M 114,12 L 137,6.5 L 154,12 L 137,17.5 Z" fill="none" stroke="#D3BA84" stroke-width="0.9" stroke-linejoin="miter"/>
+        <path d="M 119,12 L 137,8 L 150,12 L 137,16 Z"     fill="none" stroke="#D3BA84" stroke-width="0.5" stroke-linejoin="miter" opacity="0.65"/>
+        <path d="M 206,12 L 183,6.5 L 166,12 L 183,17.5 Z" fill="none" stroke="#D3BA84" stroke-width="0.9" stroke-linejoin="miter"/>
+        <path d="M 201,12 L 183,8 L 170,12 L 183,16 Z"     fill="none" stroke="#D3BA84" stroke-width="0.5" stroke-linejoin="miter" opacity="0.65"/>
+        <path d="M 154,12 L 160,8.5 L 166,12 L 160,15.5 Z" fill="none" stroke="#D3BA84" stroke-width="0.9" stroke-linejoin="miter"/>
+      </svg>
+      <p class="sheet-desc">Oponentes precisam de 25 lore para vencer o jogo.</p>
+      <p class="sheet-question">Quem tem <em>Donald Duck - Flustered Sorcerer</em> em jogo?</p>
+      <div class="sheet-players">
+        <button class="sheet-player-btn" data-player="1">
+          <span>JOGADOR 1</span>
+          <i class="fa-regular fa-square sheet-check-icon"></i>
+        </button>
+        <button class="sheet-player-btn" data-player="2">
+          <span>JOGADOR 2</span>
+          <i class="fa-regular fa-square sheet-check-icon"></i>
+        </button>
+      </div>
+      <button class="sheet-continue" id="sheetContinue">CONTINUAR JOGO</button>
+      <button class="sheet-cancel" id="sheetCancel">CANCELAR</button>
+    </div>
+  </div>
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <p class="modal-congrats">PARABÉNS!</p>
+      <svg class="modal-divider" viewBox="0 0 320 24" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <line x1="0"   y1="12" x2="114" y2="12" stroke="#D3BA84" stroke-width="0.8" opacity="0.7"/>
+        <line x1="206" y1="12" x2="320" y2="12" stroke="#D3BA84" stroke-width="0.8" opacity="0.7"/>
+        <path d="M 114,12 L 137,6.5 L 154,12 L 137,17.5 Z" fill="none" stroke="#D3BA84" stroke-width="0.9" stroke-linejoin="miter"/>
+        <path d="M 119,12 L 137,8 L 150,12 L 137,16 Z"     fill="none" stroke="#D3BA84" stroke-width="0.5" stroke-linejoin="miter" opacity="0.65"/>
+        <path d="M 206,12 L 183,6.5 L 166,12 L 183,17.5 Z" fill="none" stroke="#D3BA84" stroke-width="0.9" stroke-linejoin="miter"/>
+        <path d="M 201,12 L 183,8 L 170,12 L 183,16 Z"     fill="none" stroke="#D3BA84" stroke-width="0.5" stroke-linejoin="miter" opacity="0.65"/>
+        <path d="M 154,12 L 160,8.5 L 166,12 L 160,15.5 Z" fill="none" stroke="#D3BA84" stroke-width="0.9" stroke-linejoin="miter"/>
+      </svg>
+      <p class="modal-winner" id="modalWinner">JOGADOR X VENCEU!</p>
+      <button class="modal-newgame" id="modalNewGame">NOVO JOGO</button>
+    </div>
+  </div>
+
+</div>
+<script src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/lore-counter/sw.js')
+        .catch(err => console.warn('SW:', err));
+    });
+  }
+</script>
+</body>
+</html>
