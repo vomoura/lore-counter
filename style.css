@@ -5,6 +5,55 @@
    Kelp (black)    #1C1C1A   rgb(28,28,26)
    ─────────────────────────────────────────────────────────────────────── */
 
+/* ── Splash screen ── */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #1C1C1A;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.splash.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.splash-symbol {
+  width: min(160px, 35vw);
+  height: auto;
+  filter:
+    drop-shadow(0 0 16px rgba(211,186,132,0.7))
+    drop-shadow(0 0 40px rgba(211,186,132,0.3));
+  animation: splash-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes splash-pulse {
+  0%, 100% { filter: drop-shadow(0 0 16px rgba(211,186,132,0.7)) drop-shadow(0 0 40px rgba(211,186,132,0.3)); }
+  50%       { filter: drop-shadow(0 0 28px rgba(211,186,132,1))   drop-shadow(0 0 70px rgba(211,186,132,0.6)); }
+}
+
+.splash-title {
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 8px;
+  color: rgba(211, 186, 132, 0.7);
+  text-transform: uppercase;
+}
+
+.splash-logo {
+  width: min(200px, 50vw);
+  height: auto;
+  object-fit: contain;
+  opacity: 0.9;
+}
+
 /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 

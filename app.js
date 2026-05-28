@@ -1,5 +1,18 @@
 'use strict';
 
+// ── Splash screen ──────────────────────────────────────────────────────────
+const splashEl = document.getElementById('splash');
+const splashStart = Date.now();
+const MIN_SPLASH_MS = 2000;
+
+function hideSplash() {
+  const elapsed = Date.now() - splashStart;
+  const remaining = Math.max(0, MIN_SPLASH_MS - elapsed);
+  setTimeout(() => splashEl.classList.add('hidden'), remaining);
+}
+
+window.addEventListener('load', hideSplash);
+
 // ── State ──────────────────────────────────────────────────────────────────
 const counts = { 1: 0, 2: 0 };
 

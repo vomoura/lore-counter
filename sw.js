@@ -9,6 +9,7 @@ const ASSETS = [
   `${BASE}/assets/losango_alongado_illuminary_gold.svg`,
   `${BASE}/assets/background.jpg`,
   `${BASE}/assets/exception.png`,
+  `${BASE}/assets/DLC_Logo_Medium_RGB.png`,
 ];
 
 // Install: cache all assets
