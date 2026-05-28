@@ -8,7 +8,7 @@ const ASSETS = [
   `${BASE}/manifest.json`,
   `${BASE}/assets/losango_alongado_illuminary_gold.svg`,
   `${BASE}/assets/background.jpg`,
-  `${BASE}/assets/exception.jpg`,
+  `${BASE}/assets/exception.png`,
 ];
 
 // Install: cache all assets

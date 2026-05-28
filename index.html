@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+<div class="app-container">
 <div class="app">
 
   <!-- ── PLAYER 2 (top half, rotated 180°) ── -->
@@ -147,7 +148,7 @@
 
   <!-- ── EXCEPTION MODAL (bottom sheet) ── -->
   <div class="sheet-backdrop" id="sheetBackdrop">
-    <img class="sheet-card-img" id="sheetCardImg" src="assets/exception.jpg" alt="Card exception" draggable="false"/>
+    <img class="sheet-card-img" id="sheetCardImg" src="assets/exception.png" alt="Card exception" draggable="false"/>
     <div class="sheet" id="sheet">
       <div class="sheet-handle"></div>
       <p class="sheet-title">EFEITO DO CARD</p>
@@ -193,7 +194,8 @@
     </div>
   </div>
 
-</div>
+</div><!-- .app -->
+</div><!-- .app-container -->
 <script src="app.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
