@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lore-counter-v3';
+const CACHE_NAME = 'lore-counter-v4';
 const BASE = '/lore-counter';
 const ASSETS = [
   `${BASE}/`,

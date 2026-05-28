@@ -6,8 +6,8 @@
   "scope": "/lore-counter/",
   "display": "fullscreen",
   "orientation": "portrait",
-  "background_color": "#373B70",
-  "theme_color": "#373B70",
+  "background_color": "#1C1C1A",
+  "theme_color": "#1C1C1A",
   "icons": [
     {
       "src": "assets/losango_alongado_illuminary_gold.svg",

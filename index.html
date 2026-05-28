@@ -32,8 +32,19 @@
         <stop offset="70%"  stop-color="#B89840"/>
         <stop offset="100%" stop-color="#8A6A10"/>
       </linearGradient>
+      <filter id="splashGlow" x="-30%" y="-20%" width="160%" height="140%">
+        <feGaussianBlur stdDeviation="5" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
     </defs>
-    <path fill="url(#splashGold)" fill-rule="evenodd" d="M 110.00 29.00 C 128.00 86.00, 156.00 136.00, 188.00 185.00 C 156.00 214.00, 128.00 242.00, 110.00 263.00 C 92.00 242.00, 64.00 214.00, 32.00 185.00 C 64.00 136.00, 92.00 86.00, 110.00 29.00 Z"/>
+    <!-- Outer contour — thick -->
+    <path fill="none" stroke="url(#splashGold)" stroke-width="9" stroke-linejoin="miter" stroke-miterlimit="10"
+      filter="url(#splashGlow)"
+      d="M 110,29 C 128,86 156,136 188,185 C 156,214 128,242 110,263 C 92,242 64,214 32,185 C 64,136 92,86 110,29 Z"/>
+    <!-- Inner contour — thin -->
+    <path fill="none" stroke="url(#splashGold)" stroke-width="2.5" stroke-linejoin="miter" stroke-miterlimit="10"
+      opacity="0.75"
+      d="M 110,55 C 124,97 147,140 173,185 C 147,207 124,230 110,249 C 96,230 73,207 47,185 C 73,140 96,97 110,55 Z"/>
   </svg>
 
   <img class="splash-logo" src="assets/DLC_Logo_Medium_RGB.png" alt="Disney Lorcana" draggable="false"/>
