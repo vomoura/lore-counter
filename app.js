@@ -1,9 +1,53 @@
 'use strict';
 
-// ── Splash screen ──────────────────────────────────────────────────────────
+// ── Install prompt ────────────────────────────────────────────────────────
+let deferredInstallPrompt = null;
+const installPromptEl = document.getElementById('installPrompt');
+const installPromptClose = document.getElementById('installPromptClose');
+
+// Capture the browser's install event
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+
+  // Only show on first visit (not if already dismissed)
+  if (!localStorage.getItem('installDismissed')) {
+    // Show after splash is gone
+    setTimeout(() => {
+      installPromptEl.classList.add('visible');
+      // Auto-hide after 8 seconds
+      setTimeout(() => hideInstallPrompt(), 8000);
+    }, MIN_SPLASH_MS + 1000);
+  }
+});
+
+function hideInstallPrompt() {
+  installPromptEl.classList.add('hiding');
+  setTimeout(() => installPromptEl.classList.remove('visible', 'hiding'), 500);
+}
+
+// Click on prompt body = trigger install
+installPromptEl.addEventListener('click', async e => {
+  if (e.target === installPromptClose) return;
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+  if (outcome === 'accepted') hideInstallPrompt();
+  deferredInstallPrompt = null;
+});
+
+// Close button = dismiss and remember
+installPromptClose.addEventListener('click', e => {
+  e.stopPropagation();
+  localStorage.setItem('installDismissed', '1');
+  hideInstallPrompt();
+});
+
+// Hide if already installed
+window.addEventListener('appinstalled', () => hideInstallPrompt());
 const splashEl = document.getElementById('splash');
 const splashStart = Date.now();
-const MIN_SPLASH_MS = 2000;
+const MIN_SPLASH_MS = 4000;
 
 function hideSplash() {
   const elapsed = Date.now() - splashStart;
