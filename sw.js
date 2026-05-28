@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lore-counter-v4';
+const CACHE_NAME = 'lore-counter-v5';
 const BASE = '/lore-counter';
 const ASSETS = [
   `${BASE}/`,
@@ -20,7 +20,7 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// Activate: remove old caches
+// Activate: remove old caches and immediately take control
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -30,17 +30,37 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch: cache-first strategy
+// Fetch: network-first for HTML, cache-first for everything else
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      return cached || fetch(event.request).then(response => {
-        if (response && response.status === 200 && response.type === 'basic') {
+  const url = new URL(event.request.url);
+  const isHTML = event.request.destination === 'document' ||
+                 url.pathname.endsWith('.html') ||
+                 url.pathname === `${BASE}/` ||
+                 url.pathname === BASE;
+
+  if (isHTML) {
+    // Network-first: always try to get fresh HTML
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return response;
-      });
-    })
-  );
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+  } else {
+    // Cache-first for assets
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        return cached || fetch(event.request).then(response => {
+          if (response && response.status === 200 && response.type === 'basic') {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return response;
+        });
+      })
+    );
+  }
 });
