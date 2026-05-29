@@ -8,14 +8,14 @@
 
 ## Funcionalidades
 
-- **Dois jogadores** — tela dividida, com o Jogador 2 invertido para jogar frente a frente
+- **Dois jogadores** - tela dividida, com o Jogador 2 invertido para jogar frente a frente
 - **Símbolo de Lore** oficial do Disney Lorcana em SVG vetorial com gradiente Illuminary Gold
 - **Botões +/−** para incremento e decremento do contador (0–20)
-- **Dial horizontal** — arraste para ajustar o valor com precisão, como um dial de rádio
-- **Haptic feedback** — vibração a cada tick do dial e ao pressionar botões (dispositivos Android)
-- **Fim de jogo** — ao atingir 20 lore, a tela escurece, o vencedor é destacado e um botão de fim de jogo aparece
-- **Modal de parabéns** — exibe o jogador vencedor com opção de iniciar novo jogo
-- **Efeito de carta** — suporte ao efeito do *Donald Duck - Flustered Sorcerer*, que eleva o limite de lore do oponente para 25
+- **Dial horizontal** - arraste para ajustar o valor com precisão, como um dial de rádio
+- **Haptic feedback** - vibração a cada tick do dial e ao pressionar botões (dispositivos Android)
+- **Fim de jogo** - ao atingir 20 lore, a tela escurece, o vencedor é destacado e um botão de fim de jogo aparece
+- **Modal de parabéns** - exibe o jogador vencedor com opção de iniciar novo jogo
+- **Efeito de carta** - suporte ao efeito do *Donald Duck - Flustered Sorcerer*, que eleva o limite de lore do oponente para 25
 
 ## Efeito do Card
 
@@ -44,7 +44,7 @@ O botão ✦ centralizado na linha divisória abre o painel de exceção. Ao sel
 
 ## Tecnologias
 
-- HTML5 + CSS3 + JavaScript puro — sem frameworks
+- HTML5 + CSS3 + JavaScript puro sem frameworks
 - SVG inline para o símbolo de Lore
 - [Lato](https://fonts.google.com/specimen/Lato) via Google Fonts
 - [Font Awesome 6](https://fontawesome.com/) para ícones
