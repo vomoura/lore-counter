@@ -1,50 +1,6 @@
 'use strict';
 
-// ── Install prompt ────────────────────────────────────────────────────────
-let deferredInstallPrompt = null;
-const installPromptEl = document.getElementById('installPrompt');
-const installPromptClose = document.getElementById('installPromptClose');
-
-// Capture the browser's install event
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredInstallPrompt = e;
-
-  // Only show on first visit (not if already dismissed)
-  if (!localStorage.getItem('installDismissed')) {
-    // Show after splash is gone
-    setTimeout(() => {
-      installPromptEl.classList.add('visible');
-      // Auto-hide after 8 seconds
-      setTimeout(() => hideInstallPrompt(), 8000);
-    }, MIN_SPLASH_MS + 1000);
-  }
-});
-
-function hideInstallPrompt() {
-  installPromptEl.classList.add('hiding');
-  setTimeout(() => installPromptEl.classList.remove('visible', 'hiding'), 500);
-}
-
-// Click on prompt body = trigger install
-installPromptEl.addEventListener('click', async e => {
-  if (e.target === installPromptClose) return;
-  if (!deferredInstallPrompt) return;
-  deferredInstallPrompt.prompt();
-  const { outcome } = await deferredInstallPrompt.userChoice;
-  if (outcome === 'accepted') hideInstallPrompt();
-  deferredInstallPrompt = null;
-});
-
-// Close button = dismiss and remember
-installPromptClose.addEventListener('click', e => {
-  e.stopPropagation();
-  localStorage.setItem('installDismissed', '1');
-  hideInstallPrompt();
-});
-
-// Hide if already installed
-window.addEventListener('appinstalled', () => hideInstallPrompt());
+// ── Splash screen ──────────────────────────────────────────────────────────
 const splashEl = document.getElementById('splash');
 const splashStart = Date.now();
 const MIN_SPLASH_MS = 4000;
@@ -57,6 +13,69 @@ function hideSplash() {
 
 window.addEventListener('load', hideSplash);
 
+// ── Install prompt ────────────────────────────────────────────────────────
+let deferredInstallPrompt = null;
+const installPromptEl    = document.getElementById('installPrompt');
+const installPromptClose = document.getElementById('installPromptClose');
+const installPromptIos   = document.getElementById('installPromptIos');
+const installPromptIosClose = document.getElementById('installPromptIosClose');
+
+// Detect iOS Safari (not already installed as PWA)
+const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches
+  || window.navigator.standalone === true;
+
+// Android: capture beforeinstallprompt
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (!localStorage.getItem('installDismissed')) {
+    setTimeout(() => {
+      installPromptEl.classList.add('visible');
+      setTimeout(() => hideInstallPrompt(), 8000);
+    }, MIN_SPLASH_MS + 1000);
+  }
+});
+
+function hideInstallPrompt() {
+  installPromptEl.classList.add('hiding');
+  setTimeout(() => installPromptEl.classList.remove('visible', 'hiding'), 500);
+}
+
+installPromptEl.addEventListener('click', async e => {
+  if (e.target === installPromptClose) return;
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+  if (outcome === 'accepted') hideInstallPrompt();
+  deferredInstallPrompt = null;
+});
+
+installPromptClose.addEventListener('click', e => {
+  e.stopPropagation();
+  localStorage.setItem('installDismissed', '1');
+  hideInstallPrompt();
+});
+
+window.addEventListener('appinstalled', () => hideInstallPrompt());
+
+// iOS: show manual install instructions
+if (isIos && !isInStandaloneMode && !localStorage.getItem('installDismissedIos')) {
+  setTimeout(() => {
+    installPromptIos.classList.add('visible');
+    setTimeout(() => hideInstallPromptIos(), 10000);
+  }, MIN_SPLASH_MS + 1000);
+}
+
+function hideInstallPromptIos() {
+  installPromptIos.classList.add('hiding');
+  setTimeout(() => installPromptIos.classList.remove('visible', 'hiding'), 500);
+}
+
+installPromptIosClose.addEventListener('click', () => {
+  localStorage.setItem('installDismissedIos', '1');
+  hideInstallPromptIos();
+});
 // ── State ──────────────────────────────────────────────────────────────────
 const counts = { 1: 0, 2: 0 };
 
@@ -207,7 +226,7 @@ setupDial(2);
 [1, 2].forEach(player => {
   document.querySelectorAll(`.btn-circle[data-player="${player}"]`).forEach(btn => {
     const delta = parseInt(btn.dataset.delta);
-    btn.disabled = (delta < 0 && counts[player] <= MIN_LORE) || (delta > 0 && counts[player] >= MAX_LORE);
+    btn.disabled = (delta < 0 && counts[player] <= MIN_LORE) || (delta > 0 && counts[player] >= maxLoreFor(player));
   });
 });
 
@@ -247,13 +266,6 @@ sheetCardImg.addEventListener('click', (e) => {
 function closeSheet() {
   sheetBackdrop.classList.remove('visible', 'collapsed');
   sheetCardImg.classList.remove('visible');
-  // Reset only the visual selection state, NOT donaldOwner
-  document.querySelectorAll('.sheet-player-btn').forEach(btn => {
-    btn.classList.remove('active');
-    const icon = btn.querySelector('.sheet-check-icon');
-    icon.classList.replace('fa-solid', 'fa-regular');
-    icon.classList.replace('fa-square-check', 'fa-square');
-  });
 }
 
 sheetBackdrop.addEventListener('click', e => {
@@ -326,8 +338,7 @@ function updateGameOverState() {
 }
 
 document.getElementById('gameoverBtn').addEventListener('click', () => {
-  // Show modal with winner name
-  const winner = counts[1] >= MAX_LORE ? 1 : 2;
+  const winner = counts[1] >= maxLoreFor(1) ? 1 : 2;
   document.getElementById('modalWinner').textContent = `JOGADOR ${winner} VENCEU!`;
   document.getElementById('modalBackdrop').classList.add('visible');
 });

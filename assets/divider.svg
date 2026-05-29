@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 24" preserveAspectRatio="xMidYMid meet">
+  <line x1="0"   y1="12" x2="114" y2="12" stroke="#D3BA84" stroke-width="0.8" opacity="0.7"/>
+  <line x1="206" y1="12" x2="320" y2="12" stroke="#D3BA84" stroke-width="0.8" opacity="0.7"/>
+  <path d="M 114,12 L 137,6.5 L 154,12 L 137,17.5 Z" fill="none" stroke="#D3BA84" stroke-width="0.9" stroke-linejoin="miter"/>
+  <path d="M 119,12 L 137,8 L 150,12 L 137,16 Z"     fill="none" stroke="#D3BA84" stroke-width="0.5" stroke-linejoin="miter" opacity="0.65"/>
+  <path d="M 206,12 L 183,6.5 L 166,12 L 183,17.5 Z" fill="none" stroke="#D3BA84" stroke-width="0.9" stroke-linejoin="miter"/>
+  <path d="M 201,12 L 183,8 L 170,12 L 183,16 Z"     fill="none" stroke="#D3BA84" stroke-width="0.5" stroke-linejoin="miter" opacity="0.65"/>
+  <path d="M 154,12 L 160,8.5 L 166,12 L 160,15.5 Z" fill="none" stroke="#D3BA84" stroke-width="0.9" stroke-linejoin="miter"/>
+</svg>

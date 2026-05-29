@@ -5,6 +5,75 @@
    Kelp (black)    #1C1C1A   rgb(28,28,26)
    ─────────────────────────────────────────────────────────────────────── */
 
+/* ── Install prompt iOS ── */
+.install-prompt-ios {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(200px);
+  z-index: 99;
+  width: min(300px, 85vw);
+  padding: 16px;
+  background: rgba(55, 59, 112, 0.97);
+  border: 1px solid #D3BA84;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.5s ease;
+}
+
+.install-prompt-ios .install-prompt__close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+}
+
+.install-prompt-ios.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+.install-prompt-ios.hiding {
+  transform: translateX(-50%) translateY(200px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.install-prompt-ios__text {
+  font-family: 'Lato', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #E3CAA8;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.install-prompt-ios__text i {
+  color: #D3BA84;
+  margin: 0 2px;
+}
+
+.install-prompt-ios__text strong {
+  color: #D3BA84;
+  font-weight: 700;
+}
+
+/* Arrow pointing down toward Safari share button */
+.install-prompt-ios__arrow {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #D3BA84;
+}
+
 /* ── Install prompt ── */
 .install-prompt {
   position: fixed;
@@ -217,7 +286,7 @@ html, body {
   justify-content: center;
   padding: 2px 24px;
 }
-.divider svg { width: 100%; max-width: 340px; }
+.divider svg, .divider img { width: 100%; max-width: 340px; }
 
 /* ── Player label ── */
 .player-label {
@@ -289,16 +358,20 @@ html, body {
 /* ── Buttons ── */
 .btn-circle {
   background: transparent;
-  border: none;
+  border: 1.2px solid currentColor;
+  border-radius: 50%;
   cursor: pointer;
   padding: 0;
   width: min(48px, 6vh);
   height: min(48px, 6vh);
   flex-shrink: 0;
-  /* Illuminary Gold at 60% opacity */
   color: rgba(211, 186, 132, 0.6);
   -webkit-tap-highlight-color: transparent;
   transition: color 0.15s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: min(32px, 4vh);
 }
 
 .btn-circle:active {
@@ -312,11 +385,10 @@ html, body {
   pointer-events: none;
 }
 
-.btn-circle svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  margin-top: min(32px, 4vh);
+.btn-circle i {
+  padding-top: 2px;
+  font-size: min(24px, 2.4vh);
+  line-height: 1;
 }
 
 /* ── Dial ── */
@@ -331,7 +403,7 @@ html, body {
 /* Player 1's half sits at the bottom — safe area handling */
 
 /* No navegador: padding fixo para cobrir a barra de navegação do Android */
-@media not all and (display-mode: fullscreen) and (display-mode: standalone) {
+@media not ((display-mode: standalone) or (display-mode: fullscreen)) {
   .half--p1 {
     padding-bottom: 48px;
   }
@@ -401,7 +473,7 @@ html, body {
   z-index: 2;
 }
 
-/* ── Lore button (right edge, centered on divider) ── */
+/* ── Lore button (right edge, anchored to divider) ── */
 .btn-lore {
   position: absolute;
   right: 20px;
@@ -431,9 +503,11 @@ html, body {
 /* Symbol fills the button as background layer */
 .btn-lore__symbol {
   position: absolute;
-  inset: 2px;
-  width: calc(100% - 4px);
-  height: calc(100% - 4px);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 44px;
   filter: drop-shadow(0 0 4px rgba(211,186,132,0.3));
 }
 

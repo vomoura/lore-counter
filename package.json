@@ -1,10 +1,9 @@
 {
   "name": "lore-counter",
   "version": "1.0.0",
-  "description": "Lorcana Lore Counter PWA",
+  "description": "Disney Lorcana Lore Counter PWA",
   "scripts": {
-    "start": "npx serve . -l 3000",
-    "icons": "node generate-icons.js"
+    "start": "npx serve . -l 3000"
   },
   "private": true
 }
