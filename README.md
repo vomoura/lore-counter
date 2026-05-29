@@ -8,18 +8,25 @@
 
 ## Funcionalidades
 
-- **Dois jogadores** - tela dividida, com o Jogador 2 invertido para jogar frente a frente
-- **Símbolo de Lore** oficial do Disney Lorcana em SVG vetorial com gradiente Illuminary Gold
-- **Botões +/−** para incremento e decremento do contador (0–20)
-- **Dial horizontal** - arraste para ajustar o valor com precisão, como um dial de rádio
-- **Haptic feedback** - vibração a cada tick do dial e ao pressionar botões (dispositivos Android)
-- **Fim de jogo** - ao atingir 20 lore, a tela escurece, o vencedor é destacado e um botão de fim de jogo aparece
-- **Modal de parabéns** - exibe o jogador vencedor com opção de iniciar novo jogo
-- **Efeito de carta** - suporte ao efeito do *Donald Duck - Flustered Sorcerer*, que eleva o limite de lore do oponente para 25
+- **Dois jogadores** — tela dividida, com o Jogador 2 invertido para jogar frente a frente
+- **Símbolo de Lore** do Disney Lorcana em SVG vetorial com gradiente Illuminary Gold
+- **Botões +/−** para incremento e decremento do contador (0 a 20)
+- **Dial horizontal** — arraste para ajustar o valor com precisão, como um dial de rádio
+- **Haptic feedback** — vibração a cada tick do dial e ao pressionar botões (dispositivos Android)
+- **Fim de jogo** — ao atingir 20 lore, a tela escurece, o vencedor é destacado e um botão de fim de jogo aparece
+- **Modal de parabéns** — exibe o jogador vencedor com opção de iniciar novo jogo
+- **Efeito de carta** — suporte ao efeito do *Donald Duck - Flustered Sorcerer*, que eleva o limite de lore do oponente para 25
+- **Histórico de partida** — registra cada alteração de lore com o delta acumulado, placar antes e depois, e timestamp por jogador
+- **Splash screen** — tela de abertura com o símbolo de Lore animado e a logo do Disney Lorcana
+- **Prompt de instalação** — balão customizado para instalar o app no Android e instruções para iOS
 
 ## Efeito do Card
 
 O botão ✦ centralizado na linha divisória abre o painel de exceção. Ao selecionar qual jogador possui o *Donald Duck - Flustered Sorcerer* em jogo, o oponente desse jogador precisará de **25 lore** para vencer. O efeito persiste até o início de um novo jogo ou até ser desmarcado manualmente.
+
+## Histórico de Partida
+
+O botão 🕐 no lado esquerdo da linha divisória abre o log da partida. As alterações de lore são agrupadas automaticamente: inputs consecutivos com menos de 2 segundos de intervalo são consolidados em um único registro. Ao abrir o histórico, qualquer entrada pendente é registrada imediatamente.
 
 ---
 
@@ -37,15 +44,17 @@ O botão ✦ centralizado na linha divisória abre o painel de exceção. Ao sel
 ## Instalação como PWA
 
 1. Acesse **[https://vomoura.github.io/lore-counter/](https://vomoura.github.io/lore-counter/)** no Chrome Android
-2. Toque no menu `⋮` → **"Adicionar à tela inicial"**
+2. Toque no menu `⋮` e depois em **"Adicionar à tela inicial"**
 3. O app abre em tela cheia, sem barra do navegador
+
+No iOS Safari, toque em **Compartilhar** e depois em **"Adicionar à Tela de Início"**.
 
 ---
 
 ## Tecnologias
 
-- HTML5 + CSS3 + JavaScript puro sem frameworks
-- SVG inline para o símbolo de Lore
+- HTML5 + CSS3 + JavaScript puro, sem frameworks
+- SVG inline e externo para os símbolos e divisores
 - [Lato](https://fonts.google.com/specimen/Lato) via Google Fonts
 - [Font Awesome 6](https://fontawesome.com/) para ícones
 - Service Worker para funcionamento offline
@@ -60,12 +69,13 @@ O botão ✦ centralizado na linha divisória abre o painel de exceção. Ao sel
 lore-counter/
 ├── index.html        # Estrutura e layout
 ├── style.css         # Estilos e animações
-├── app.js            # Lógica do contador, dial e modais
+├── app.js            # Lógica do contador, dial, histórico e modais
 ├── manifest.json     # Configuração PWA
 ├── sw.js             # Service Worker (cache offline)
 └── assets/
     ├── background.jpg                        # Background nebulosa
-    ├── exception.jpg                         # Carta Donald Duck
+    ├── exception.png                         # Carta Donald Duck
+    ├── divider.svg                           # Divisor ornamental
     └── losango_alongado_illuminary_gold.svg  # Símbolo de Lore
 ```
 
