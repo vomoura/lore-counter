@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lore-counter-v9';
+const CACHE_NAME = 'lore-counter-v10';
 const BASE = '/lore-counter';
 const ASSETS = [
   `${BASE}/`,
@@ -6,6 +6,15 @@ const ASSETS = [
   `${BASE}/style.css`,
   `${BASE}/app.js`,
   `${BASE}/manifest.json`,
+  `${BASE}/assets/lato.css`,
+  `${BASE}/assets/lato-300.ttf`,
+  `${BASE}/assets/lato-400.ttf`,
+  `${BASE}/assets/lato-700.ttf`,
+  `${BASE}/assets/fa.css`,
+  `${BASE}/assets/webfonts/fa-solid-900.woff2`,
+  `${BASE}/assets/webfonts/fa-solid-900.ttf`,
+  `${BASE}/assets/webfonts/fa-regular-400.woff2`,
+  `${BASE}/assets/webfonts/fa-regular-400.ttf`,
   `${BASE}/assets/losango_alongado_illuminary_gold.svg`,
   `${BASE}/assets/divider.svg`,
   `${BASE}/assets/background.jpg`,

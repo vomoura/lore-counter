@@ -1,0 +1,36 @@
+/* Font Awesome 6 Free - local subset (solid + regular only) */
+
+:root {
+  --fa-font-solid: normal 900 1em/1 "Font Awesome 6 Free";
+  --fa-font-regular: normal 400 1em/1 "Font Awesome 6 Free";
+}
+
+@font-face {
+  font-family: "Font Awesome 6 Free";
+  font-style: normal;
+  font-weight: 900;
+  font-display: block;
+  src: url('webfonts/fa-solid-900.woff2') format('woff2'),
+       url('webfonts/fa-solid-900.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: "Font Awesome 6 Free";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('webfonts/fa-regular-400.woff2') format('woff2'),
+       url('webfonts/fa-regular-400.ttf') format('truetype');
+}
+
+.fa-solid, .fas { font-family: "Font Awesome 6 Free"; font-weight: 900; font-style: normal; }
+.fa-regular, .far { font-family: "Font Awesome 6 Free"; font-weight: 400; font-style: normal; }
+
+/* Icons used in this app */
+.fa-plus::before         { content: "\2b"; }
+.fa-minus::before        { content: "\f068"; }
+.fa-chevron-right::before { content: "\f054"; }
+.fa-clock-rotate-left::before { content: "\f1da"; }
+.fa-square::before       { content: "\f0c8"; }
+.fa-square-check::before { content: "\f14a"; }
+.fa-arrow-up-from-bracket::before { content: "\e09a"; }
