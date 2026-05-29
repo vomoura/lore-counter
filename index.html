@@ -85,6 +85,11 @@
   <!-- ── DIVIDER ── -->
   <div class="divider">
     <img src="assets/divider.svg" alt="" draggable="false"/>
+    <!-- History button anchored to divider, left side -->
+    <button class="btn-history" id="btnHistory" aria-label="Histórico">
+      <i class="fa-solid fa-clock-rotate-left"></i>
+    </button>
+
     <!-- Lore button anchored to divider -->
     <button class="btn-lore" id="btnLore" aria-label="Lore">
       <svg class="btn-lore__symbol" viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg">
@@ -132,6 +137,23 @@
         <div class="dial-ticks" id="dialTicks1"></div>
         <div class="dial-cursor"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- ── HISTORY SHEET ── -->
+  <div class="sheet-backdrop" id="historyBackdrop">
+    <div class="sheet" id="historySheet">
+      <div class="sheet-handle"></div>
+      <p class="sheet-title">HISTÓRICO</p>
+      <img class="modal-divider" src="assets/divider.svg" alt=""/>
+      <div class="history-totals">
+        <span class="history-total" id="historyTotal1">JOGADOR 1: <strong>0</strong></span>
+        <span class="history-total" id="historyTotal2">JOGADOR 2: <strong>0</strong></span>
+      </div>
+      <div class="history-list" id="historyList">
+        <p class="history-empty">Nenhum registro ainda.</p>
+      </div>
+      <button class="sheet-cancel" id="historyClose">FECHAR</button>
     </div>
   </div>
 

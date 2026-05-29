@@ -473,6 +473,111 @@ html, body {
   z-index: 2;
 }
 
+/* ── History button (left edge, anchored to divider) ── */
+.btn-history {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #1C1C1A;
+  border: 1.2px solid rgba(211, 186, 132, 0.55);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(211, 186, 132, 0.75);
+  font-size: 18px;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, transform 0.1s, color 0.15s;
+}
+
+.btn-history:active {
+  transform: translateY(-50%) scale(0.88);
+  border-color: rgba(211, 186, 132, 0.9);
+  color: #E3CAA8;
+}
+
+/* ── History sheet ── */
+.history-totals {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 8px;
+  padding: 0 4px;
+}
+
+.history-total {
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: rgba(211, 186, 132, 0.65);
+  text-transform: uppercase;
+}
+
+.history-total strong {
+  color: #D3BA84;
+  font-weight: 700;
+}
+
+.history-list {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /* most recent on top — items are prepended in JS */
+}
+
+.history-empty {
+  font-family: 'Lato', sans-serif;
+  font-size: 14px;
+  color: rgba(211, 186, 132, 0.35);
+  text-align: center;
+  margin-top: 16px;
+}
+
+.history-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 6px;
+  font-family: 'Lato', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: #E3CAA8;
+  letter-spacing: 0.5px;
+}
+
+.history-entry__player {
+  font-weight: 700;
+  color: #D3BA84;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+
+.history-entry__delta {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.history-entry__delta.positive { color: #7ecf8e; }
+.history-entry__delta.negative { color: #e07070; }
+
+.history-entry__score {
+  font-size: 13px;
+  color: rgba(211, 186, 132, 0.5);
+}
+
 /* ── Lore button (right edge, anchored to divider) ── */
 .btn-lore {
   position: absolute;

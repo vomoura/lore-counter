@@ -103,12 +103,16 @@ function maxLoreFor(player) {
 function setCount(player, val) {
   const next = Math.max(MIN_LORE, Math.min(maxLoreFor(player), val));
   if (next === counts[player]) return;
+  const prev = counts[player];
   counts[player] = next;
 
   const el   = document.getElementById(`count${player}`);
   const drop = el.closest('.symbol-wrap').querySelector('.lore-drop');
 
   el.textContent = next;
+
+  // Register history entry (debounced)
+  addHistoryEntry(player, next - prev, prev);
 
   el.classList.remove('bump');
   void el.offsetWidth;
@@ -228,6 +232,89 @@ setupDial(2);
     const delta = parseInt(btn.dataset.delta);
     btn.disabled = (delta < 0 && counts[player] <= MIN_LORE) || (delta > 0 && counts[player] >= maxLoreFor(player));
   });
+});
+
+// ── History log ───────────────────────────────────────────────────────────
+const history = [];
+
+// Debounce state per player: accumulate deltas within 3s window
+const HISTORY_DEBOUNCE_MS = 2000;
+const pendingEntry = {
+  1: { timer: null, delta: 0, scoreBefore: 0 },
+  2: { timer: null, delta: 0, scoreBefore: 0 },
+};
+
+function flushHistory(player) {
+  const p = pendingEntry[player];
+  if (p.delta === 0) return;
+  history.unshift({
+    player,
+    delta: p.delta,
+    scoreBefore: p.scoreBefore,
+    scoreAfter: p.scoreBefore + p.delta,
+  });
+  p.delta = 0;
+  p.timer = null;
+}
+
+function addHistoryEntry(player, delta, scoreBefore) {
+  const p = pendingEntry[player];
+
+  if (p.timer === null) {
+    // Start new window
+    p.scoreBefore = scoreBefore;
+    p.delta = delta;
+  } else {
+    // Accumulate within window
+    clearTimeout(p.timer);
+    p.delta += delta;
+  }
+
+  p.timer = setTimeout(() => flushHistory(player), HISTORY_DEBOUNCE_MS);
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  // Update totals
+  document.querySelector('#historyTotal1 strong').textContent = counts[1];
+  document.querySelector('#historyTotal2 strong').textContent = counts[2];
+
+  if (history.length === 0) {
+    list.innerHTML = '<p class="history-empty">Nenhum registro ainda.</p>';
+    return;
+  }
+
+  list.innerHTML = history.map(e => `
+    <div class="history-entry">
+      <span class="history-entry__player">Jogador ${e.player}</span>
+      <span class="history-entry__delta ${e.delta > 0 ? 'positive' : 'negative'}">
+        ${e.delta > 0 ? '+' : ''}${e.delta}
+      </span>
+      <span class="history-entry__score">${e.scoreBefore} → ${e.scoreAfter}</span>
+    </div>
+  `).join('');
+}
+
+const historyBackdrop = document.getElementById('historyBackdrop');
+
+document.getElementById('btnHistory').addEventListener('click', () => {
+  // Flush any pending entries before rendering
+  [1, 2].forEach(p => {
+    clearTimeout(pendingEntry[p].timer);
+    flushHistory(p);
+  });
+  renderHistory();
+  historyBackdrop.classList.add('visible');
+});
+
+document.getElementById('historyClose').addEventListener('click', () => {
+  historyBackdrop.classList.remove('visible');
+});
+
+historyBackdrop.addEventListener('click', e => {
+  if (!document.getElementById('historySheet').contains(e.target)) {
+    historyBackdrop.classList.remove('visible');
+  }
 });
 
 // ── Exception bottom sheet ────────────────────────────────────────────────
@@ -353,5 +440,11 @@ document.getElementById('modalNewGame').addEventListener('click', () => {
   // Reset donald card effect
   donaldOwner[1] = false;
   donaldOwner[2] = false;
+  // Clear history and pending entries
+  history.length = 0;
+  [1, 2].forEach(p => {
+    clearTimeout(pendingEntry[p].timer);
+    pendingEntry[p] = { timer: null, delta: 0, scoreBefore: 0 };
+  });
   updateGameOverState();
 });
