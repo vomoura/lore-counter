@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lore-counter-v8';
+const CACHE_NAME = 'lore-counter-v9';
 const BASE = '/lore-counter';
 const ASSETS = [
   `${BASE}/`,
@@ -13,7 +13,7 @@ const ASSETS = [
   `${BASE}/assets/DLC_Logo_Medium_RGB.png`,
 ];
 
-// Install: cache all assets
+// Install: pre-cache all assets
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
@@ -21,7 +21,7 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// Activate: remove old caches and immediately take control
+// Activate: remove old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -31,37 +31,24 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch: network-first for HTML, cache-first for everything else
+// Fetch: stale-while-revalidate for all requests
+// Serves from cache immediately (works offline), updates cache in background
 self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
-  const isHTML = event.request.destination === 'document' ||
-                 url.pathname.endsWith('.html') ||
-                 url.pathname === `${BASE}/` ||
-                 url.pathname === BASE;
+  event.respondWith(
+    caches.open(CACHE_NAME).then(cache =>
+      cache.match(event.request).then(cached => {
+        const fetchPromise = fetch(event.request)
+          .then(response => {
+            if (response && response.status === 200 && response.type === 'basic') {
+              cache.put(event.request, response.clone());
+            }
+            return response;
+          })
+          .catch(() => null);
 
-  if (isHTML) {
-    // Network-first: always try to get fresh HTML
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          return response;
-        })
-        .catch(() => caches.match(event.request))
-    );
-  } else {
-    // Cache-first for assets
-    event.respondWith(
-      caches.match(event.request).then(cached => {
-        return cached || fetch(event.request).then(response => {
-          if (response && response.status === 200 && response.type === 'basic') {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          }
-          return response;
-        });
+        // Return cached version immediately if available, otherwise wait for network
+        return cached || fetchPromise;
       })
-    );
-  }
+    )
+  );
 });
