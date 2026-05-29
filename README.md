@@ -1,36 +1,44 @@
 # ✦ Lorcana Lore Counter
 
-> Contador de Lore para **Disney Lorcana** — PWA para dois jogadores, com visual temático e haptic feedback.
+Contador de Lore para **Disney Lorcana**, feito como PWA para dois jogadores com visual temático, haptic feedback e um dial de precisão.
 
 🔗 **[Abrir o app](https://vomoura.github.io/lore-counter/)**
 
 ---
 
-## Funcionalidades
+## O que o app faz
 
-- **Dois jogadores** — tela dividida, com o Jogador 2 invertido para jogar frente a frente
-- **Símbolo de Lore** do Disney Lorcana em SVG vetorial com gradiente Illuminary Gold
-- **Botões +/−** para incremento e decremento do contador (0 a 20)
-- **Dial horizontal** — arraste para ajustar o valor com precisão, como um dial de rádio
-- **Haptic feedback** — vibração a cada tick do dial e ao pressionar botões (dispositivos Android)
-- **Fim de jogo** — ao atingir 20 lore, a tela escurece, o vencedor é destacado e um botão de fim de jogo aparece
-- **Modal de parabéns** — exibe o jogador vencedor com opção de iniciar novo jogo
-- **Efeito de carta** — suporte ao efeito do *Donald Duck - Flustered Sorcerer*, que eleva o limite de lore do oponente para 25
-- **Histórico de partida** — registra cada alteração de lore com o delta acumulado, placar antes e depois, e timestamp por jogador
-- **Splash screen** — tela de abertura com o símbolo de Lore animado e a logo do Disney Lorcana
-- **Prompt de instalação** — balão customizado para instalar o app no Android e instruções para iOS
+A tela é dividida ao meio: cada jogador tem seu próprio espaço com o símbolo de Lore, contador, botões e slider. O Jogador 2 fica invertido no topo para que os dois possam jogar frente a frente com o celular entre eles.
 
-## Efeito do Card
+### Contador
+Os botões **+** e **-** incrementam e decrementam o lore entre 0 e 20. O dial horizontal é o diferencial: deslize o dedo para ajustar o valor com precisão, como um dial de rádio, com vibração a cada tick.
 
-O botão ✦ centralizado na linha divisória abre o painel de exceção. Ao selecionar qual jogador possui o *Donald Duck - Flustered Sorcerer* em jogo, o oponente desse jogador precisará de **25 lore** para vencer. O efeito persiste até o início de um novo jogo ou até ser desmarcado manualmente.
+### Fim de jogo
+Quando um jogador chega a 20 lore, a tela escurece, o vencedor é destacado com glow e um botão **FIM DO JOGO** aparece sobre o divisor. Ao clicar, um modal exibe o vencedor e oferece a opção de iniciar um novo jogo.
 
-## Histórico de Partida
+### Efeito de carta
+O botão ✦ no lado direito do divisor abre o painel de exceção do *Donald Duck - Flustered Sorcerer*. Ao marcar qual jogador possui a carta, o oponente desse jogador precisará de **25 lore** para vencer. O efeito persiste até o início de um novo jogo ou até ser desmarcado manualmente.
 
-O botão 🕐 no lado esquerdo da linha divisória abre o log da partida. As alterações de lore são agrupadas automaticamente: inputs consecutivos com menos de 2 segundos de intervalo são consolidados em um único registro. Ao abrir o histórico, qualquer entrada pendente é registrada imediatamente.
+### Histórico de partida
+O botão 🕐 no lado esquerdo do divisor abre o log da partida. Inputs consecutivos com menos de 2 segundos de intervalo são consolidados em um único registro. Cada entrada mostra o jogador, o delta acumulado e o placar antes e depois da alteração.
 
 ---
 
-## Visual
+## Instalação
+
+O app funciona direto no navegador, mas pode ser instalado como PWA para abrir em tela cheia sem barra do navegador.
+
+**Android (Chrome)**
+1. Acesse [https://vomoura.github.io/lore-counter/](https://vomoura.github.io/lore-counter/)
+2. Toque no menu `⋮` e depois em **Adicionar à tela inicial**
+
+**iOS (Safari)**
+1. Acesse o link acima
+2. Toque em **Compartilhar** e depois em **Adicionar à Tela de Início**
+
+---
+
+## Paleta de cores
 
 | Cor | Nome | Hex |
 |-----|------|-----|
@@ -41,20 +49,10 @@ O botão 🕐 no lado esquerdo da linha divisória abre o log da partida. As alt
 
 ---
 
-## Instalação como PWA
+## Stack
 
-1. Acesse **[https://vomoura.github.io/lore-counter/](https://vomoura.github.io/lore-counter/)** no Chrome Android
-2. Toque no menu `⋮` e depois em **"Adicionar à tela inicial"**
-3. O app abre em tela cheia, sem barra do navegador
-
-No iOS Safari, toque em **Compartilhar** e depois em **"Adicionar à Tela de Início"**.
-
----
-
-## Tecnologias
-
-- HTML5 + CSS3 + JavaScript puro, sem frameworks
-- SVG inline e externo para os símbolos e divisores
+- HTML5, CSS3 e JavaScript puro, sem frameworks
+- SVG vetorial para símbolos e divisores
 - [Lato](https://fonts.google.com/specimen/Lato) via Google Fonts
 - [Font Awesome 6](https://fontawesome.com/) para ícones
 - Service Worker para funcionamento offline
@@ -63,20 +61,21 @@ No iOS Safari, toque em **Compartilhar** e depois em **"Adicionar à Tela de In�
 
 ---
 
-## Estrutura
+## Estrutura do projeto
 
 ```
 lore-counter/
-├── index.html        # Estrutura e layout
-├── style.css         # Estilos e animações
-├── app.js            # Lógica do contador, dial, histórico e modais
-├── manifest.json     # Configuração PWA
-├── sw.js             # Service Worker (cache offline)
+├── index.html
+├── style.css
+├── app.js
+├── manifest.json
+├── sw.js
 └── assets/
-    ├── background.jpg                        # Background nebulosa
-    ├── exception.png                         # Carta Donald Duck
-    ├── divider.svg                           # Divisor ornamental
-    └── losango_alongado_illuminary_gold.svg  # Símbolo de Lore
+    ├── background.jpg
+    ├── exception.png
+    ├── divider.svg
+    ├── DLC_Logo_Medium_RGB.png
+    └── losango_alongado_illuminary_gold.svg
 ```
 
 ---

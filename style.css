@@ -489,8 +489,8 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(211, 186, 132, 0.75);
-  font-size: 18px;
+  color: #D3BA84;
+  font-size: 22px;
   -webkit-tap-highlight-color: transparent;
   transition: border-color 0.15s, transform 0.1s, color 0.15s;
 }
