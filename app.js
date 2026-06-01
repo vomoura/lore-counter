@@ -1,5 +1,24 @@
 'use strict';
 
+// ── Screen Wake Lock ──────────────────────────────────────────────────────
+let wakeLock = null;
+
+async function requestWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+  } catch (err) {
+    // Silently fail — not critical
+  }
+}
+
+// Re-acquire when page becomes visible again (e.g. after tab switch)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') requestWakeLock();
+});
+
+requestWakeLock();
+
 // ── Splash screen ──────────────────────────────────────────────────────────
 const splashEl = document.getElementById('splash');
 const splashStart = Date.now();
