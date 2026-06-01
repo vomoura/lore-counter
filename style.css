@@ -179,7 +179,7 @@
 }
 
 .splash-logo {
-  width: min(200px, 50vw);
+  width: min(260px, 65vw);
   height: auto;
   object-fit: contain;
   opacity: 0.9;
@@ -187,7 +187,7 @@
 
 .splash-credit {
   font-family: 'Lato', sans-serif;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 300;
   color: rgba(211, 186, 132, 0.5);
   letter-spacing: 0.5px;
@@ -195,7 +195,7 @@
 
 .splash-version {
   font-family: 'Lato', sans-serif;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 300;
   color: rgba(211, 186, 132, 0.3);
   letter-spacing: 2px;

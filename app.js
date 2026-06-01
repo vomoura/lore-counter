@@ -1,5 +1,14 @@
 'use strict';
 
+// ── Auto-update: reload when SW activates a new version ───────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'SW_UPDATED') {
+      window.location.reload();
+    }
+  });
+}
+
 // ── Screen Wake Lock ──────────────────────────────────────────────────────
 let wakeLock = null;
 

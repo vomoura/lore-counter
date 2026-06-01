@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lore-counter-v10';
+const CACHE_NAME = 'lore-counter-v11';
 const BASE = '/lore-counter';
 const ASSETS = [
   `${BASE}/`,
@@ -38,6 +38,10 @@ self.addEventListener('activate', event => {
     )
   );
   self.clients.claim();
+  // Notify all clients to reload so they get the new version immediately
+  self.clients.matchAll({ type: 'window' }).then(clients => {
+    clients.forEach(client => client.postMessage({ type: 'SW_UPDATED' }));
+  });
 });
 
 // Fetch: stale-while-revalidate for all requests
