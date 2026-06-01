@@ -1,5 +1,14 @@
 'use strict';
 
+// ── Version from package.json ─────────────────────────────────────────────
+fetch('package.json')
+  .then(r => r.json())
+  .then(pkg => {
+    const el = document.getElementById('splashVersion');
+    if (el) el.textContent = `v${pkg.version}`;
+  })
+  .catch(() => {}); // silently fail offline
+
 // ── Auto-update: reload when SW activates a new version ───────────────────
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', event => {

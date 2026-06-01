@@ -6,6 +6,7 @@ const ASSETS = [
   `${BASE}/style.css`,
   `${BASE}/app.js`,
   `${BASE}/manifest.json`,
+  `${BASE}/package.json`,
   `${BASE}/assets/lato.css`,
   `${BASE}/assets/lato-300.ttf`,
   `${BASE}/assets/lato-400.ttf`,
