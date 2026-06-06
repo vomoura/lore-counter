@@ -338,7 +338,7 @@ html, body {
   height: 48px;
   border-radius: 50%;
   background: #1C1C1A;
-  border: 1.2px solid rgba(211, 186, 132, 0.55);
+  border: 1.5px solid rgba(211, 186, 132, 0.55);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -346,40 +346,54 @@ html, body {
   color: #D3BA84;
   font-size: 20px;
   -webkit-tap-highlight-color: transparent;
-  transition: border-color 0.15s, transform 0.15s;
+  transition: width 0.35s cubic-bezier(0.34,1.56,0.64,1),
+              height 0.35s cubic-bezier(0.34,1.56,0.64,1),
+              background 0.35s ease,
+              border-color 0.35s ease,
+              border-width 0.35s ease,
+              transform 0.35s ease;
 }
 
 .btn-hamburger.open {
-  border-color: #D3BA84;
-  box-shadow: 0 0 0 6px rgba(211,186,132,0.12);
+  width: 192px;
+  height: 192px;
+  background: transparent;
+  border: 2px solid #D3BA84;
+  transform: translateY(-50%);
 }
 
-.btn-hamburger:active {
+.btn-hamburger:active:not(.open) {
   transform: translateY(-50%) scale(0.88);
 }
 
-/* ── FAB menu ── */
+/* ── FAB menu (circular) ── */
+/* The container sits centered on the hamburger button */
 .fab-menu {
   position: absolute;
   right: 20px;
   top: 50%;
+  width: 48px;
+  height: 48px;
   transform: translateY(-50%);
   z-index: 9;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease;
 }
 
-.fab-menu.open {
-  pointer-events: all;
-  opacity: 1;
-}
+/*
+  Each item is positioned via CSS custom property --angle.
+  Radius = 96px (half of expanded button 192px).
+  translateX = -R * sin(angle), translateY = -R * cos(angle)
+  (CSS trig: angle measured from top, clockwise)
 
+  90°  → sin=1,   cos=0   → (-96px,  0)
+  150° → sin=0.5, cos=-0.866 → (-48px, 83px)
+  210° → sin=-0.5,cos=-0.866 → (48px,  83px)
+  270° → sin=-1,  cos=0   → (96px,   0)
+*/
 .fab-item {
+  position: absolute;
+  top: 50%;
+  left: 50%;
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -392,29 +406,65 @@ html, body {
   color: #D3BA84;
   font-size: 18px;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
-  transform: scale(0) translateY(0);
-  position: relative;
+  pointer-events: none;
+  /* Start collapsed at center */
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1),
+              opacity 0.25s ease;
   overflow: visible;
 }
 
-.fab-menu.open .fab-item {
-  transform: scale(1);
+/* Open positions using pre-calculated translations */
+.fab-menu.open { pointer-events: all; }
+.fab-menu.open .fab-item { pointer-events: all; opacity: 1; }
+
+/* 90° — straight up */
+.fab-menu.open .fab-item:nth-child(1) {
+  transform: translate(calc(-50% + 0px), calc(-50% - 96px)) scale(1);
+}
+/* 150° — upper-left */
+.fab-menu.open .fab-item:nth-child(2) {
+  transform: translate(calc(-50% - 83px), calc(-50% - 48px)) scale(1);
+}
+/* 210° — lower-left */
+.fab-menu.open .fab-item:nth-child(3) {
+  transform: translate(calc(-50% - 83px), calc(-50% + 48px)) scale(1);
+}
+/* 270° — straight down */
+.fab-menu.open .fab-item:nth-child(4) {
+  transform: translate(calc(-50% + 0px), calc(-50% + 96px)) scale(1);
 }
 
-.fab-menu.open .fab-item:nth-child(1) { transform: scale(1) translateY(-152px); }
-.fab-menu.open .fab-item:nth-child(2) { transform: scale(1) translateY(-100px); }
-.fab-menu.open .fab-item:nth-child(3) { transform: scale(1) translateY(-48px);  }
-.fab-menu.open .fab-item:nth-child(4) { transform: scale(1) translateY(4px);    }
+/* Staggered delays */
+.fab-menu.open .fab-item:nth-child(1) { transition-delay: 0.00s; }
+.fab-menu.open .fab-item:nth-child(2) { transition-delay: 0.05s; }
+.fab-menu.open .fab-item:nth-child(3) { transition-delay: 0.10s; }
+.fab-menu.open .fab-item:nth-child(4) { transition-delay: 0.15s; }
 
-.fab-item:active {
-  filter: brightness(1.3);
+.fab-item:active { filter: brightness(1.4); }
+
+/* SVG icons inside FAB items */
+.fab-svg-icon {
+  width: 22px;
+  height: 28px;
+  color: #D3BA84;
+}
+
+.fab-lore-icon {
+  width: 22px;
+  height: 30px;
+  color: #D3BA84;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 /* Signs inside exception FAB */
 .fab-signs {
   position: absolute;
-  bottom: 6px;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
