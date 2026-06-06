@@ -155,6 +155,14 @@ function setCount(player, val) {
     btn.disabled = (delta < 0 && next <= MIN_LORE) || (delta > 0 && next >= maxLoreFor(player));
   });
 
+  // Sudden death: first player to pull ahead wins immediately
+  if (suddenDeath && counts[1] !== counts[2]) {
+    const winner = counts[1] > counts[2] ? 1 : 2;
+    suddenDeath = false;
+    setTimeout(() => showMatchWinner(winner), 300); // brief delay so lore update is visible
+    return;
+  }
+
   updateGameOverState();
 }
 
@@ -352,6 +360,7 @@ let selectedConcede   = null; // 1, 2, or null = just restart
 document.getElementById('fabRestart').addEventListener('click', () => {
   closeFabMenu();
   selectedConcede = null;
+  document.getElementById('restartConfirmBtn').textContent = 'ZERAR LORE';
   // Reset selection visuals
   document.querySelectorAll('.restart-concede-btn').forEach(b => {
     b.classList.remove('active', 'disabled-btn');
@@ -364,35 +373,66 @@ document.getElementById('fabRestart').addEventListener('click', () => {
 
 document.querySelectorAll('.restart-concede-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    const concede = parseInt(btn.dataset.concede);
-    selectedConcede = concede;
+    const concede = btn.dataset.concede;
+    const alreadyActive = btn.classList.contains('active');
+
+    // Reset all first
     document.querySelectorAll('.restart-concede-btn').forEach(b => {
-      const isSame = parseInt(b.dataset.concede) === concede;
-      const icon   = b.querySelector('.sheet-check-icon');
-      b.classList.toggle('active', isSame);
-      b.classList.toggle('disabled-btn', !isSame);
-      if (isSame) { icon.classList.replace('fa-regular','fa-solid'); icon.classList.replace('fa-square','fa-square-check'); }
-      else        { icon.classList.replace('fa-solid','fa-regular'); icon.classList.replace('fa-square-check','fa-square'); }
+      b.classList.remove('active', 'disabled-btn');
+      const icon = b.querySelector('.sheet-check-icon');
+      icon.classList.replace('fa-solid', 'fa-regular');
+      icon.classList.replace('fa-square-check', 'fa-square');
     });
+
+    if (alreadyActive) {
+      // Deselect — none selected
+      selectedConcede = null;
+      document.getElementById('restartConfirmBtn').textContent = 'ZERAR LORE';
+    } else {
+      // Select this one, disable others
+      selectedConcede = concede;
+      btn.classList.add('active');
+      const icon = btn.querySelector('.sheet-check-icon');
+      icon.classList.replace('fa-regular', 'fa-solid');
+      icon.classList.replace('fa-square', 'fa-square-check');
+      document.querySelectorAll('.restart-concede-btn').forEach(b => {
+        if (b !== btn) b.classList.add('disabled-btn');
+      });
+      document.getElementById('restartConfirmBtn').textContent = 'FINALIZAR JOGO';
+    }
   });
 });
 
+document.getElementById('drawNewRoundBtn').addEventListener('click', () => {
+  document.getElementById('drawBackdrop').classList.remove('visible');
+  wins = { 1: 0, 2: 0 };
+  renderWinPips();
+  fullReset();
+  document.getElementById('timerBackdrop').classList.add('visible');
+});
 document.getElementById('restartCancel').addEventListener('click', () => restartBackdrop.classList.remove('visible'));
 restartBackdrop.addEventListener('click', e => {
   if (!document.getElementById('restartSheet').contains(e.target)) restartBackdrop.classList.remove('visible');
 });
 
 document.getElementById('restartConfirmBtn').addEventListener('click', () => {
-  if (selectedConcede !== null) {
-    // Show concede confirmation
-    const winner = selectedConcede === 1 ? 2 : 1;
+  if (selectedConcede === 'draw') {
+    // Draw: both players get 1 pip, end round
+    restartBackdrop.classList.remove('visible');
+    wins[1] = Math.min(wins[1] + 1, matchMode === 3 ? 2 : 1);
+    wins[2] = Math.min(wins[2] + 1, matchMode === 3 ? 2 : 1);
+    renderWinPips();
+    document.getElementById('drawBackdrop').classList.add('visible');
+  } else if (selectedConcede !== null) {
+    // Concede: show confirmation
+    const winner = selectedConcede === '1' ? 2 : 1;
     document.getElementById('concedeText').textContent =
-      `Caso confirme o Jogador ${winner} será o vencedor!`;
+      `Caso confirme o Jogador ${winner} será o vencedor deste jogo!`;
     document.getElementById('concedeBackdrop').classList.add('visible');
   } else {
-    // Just reset
+    // Just reset scores
     restartBackdrop.classList.remove('visible');
-    fullReset();
+    gameReset();
   }
 });
 
@@ -403,7 +443,7 @@ document.getElementById('concedeCancelBtn').addEventListener('click', () => {
 document.getElementById('concedeConfirmBtn').addEventListener('click', () => {
   document.getElementById('concedeBackdrop').classList.remove('visible');
   restartBackdrop.classList.remove('visible');
-  const winner = selectedConcede === 1 ? 2 : 1;
+  const winner = selectedConcede === '1' ? 2 : 1;
   showWinnerModal(winner, false);
 });
 
@@ -491,6 +531,7 @@ function gameReset(keepTimer = false) {
   });
   donaldOwner[1] = false;
   donaldOwner[2] = false;
+  suddenDeath = false;
   history.length = 0;
   [1, 2].forEach(p => { clearTimeout(pendingEntry[p].timer); pendingEntry[p] = { timer: null, delta: 0, scoreBefore: 0 }; });
   updateGameOverState();
@@ -506,12 +547,13 @@ function fullReset() {
 
 // ── Timer ─────────────────────────────────────────────────────────────────
 let timerInterval   = null;
-let timerRemaining  = 0;   // seconds
-let timerTotal      = 0;   // seconds
+let timerRemaining  = 0;
+let timerTotal      = 0;
 let timerMd         = 1;
-let extraTurns      = 0;   // 0 = not in extra turns mode
+let extraTurns      = 0;
 const timerDisplay  = document.getElementById('timerDisplay');
 const timerText     = document.getElementById('timerText');
+const CIRCUMFERENCE = 2 * Math.PI * 32; // r=32 → ~201.06
 
 // Timer setup sheet
 document.getElementById('fabTimer').addEventListener('click', () => {
@@ -541,20 +583,19 @@ let pickerSelected = 45;
 function scrollPickerTo(val) {
   const idx = PICKER_VALS.indexOf(val);
   if (idx < 0) return;
-  const itemH = 60;
+  const itemH = 44;
   picker.scrollTop = idx * itemH;
   updatePickerHighlight();
 }
 
 function updatePickerHighlight() {
-  const itemH  = 60;
+  const itemH  = 44;
   const center = picker.scrollTop + picker.clientHeight / 2;
-  let closest  = 0;
   document.querySelectorAll('.timer-picker-item').forEach((item, i) => {
     const itemCenter = i * itemH + itemH / 2;
-    const dist = Math.abs(center - itemCenter - 60); // 60 = padding
+    const dist = Math.abs(center - itemCenter - 44); // 44 = padding
     item.classList.toggle('active', dist < itemH / 2);
-    if (dist < itemH / 2) { closest = i; pickerSelected = PICKER_VALS[i]; }
+    if (dist < itemH / 2) { pickerSelected = PICKER_VALS[i]; }
   });
 }
 
@@ -565,6 +606,10 @@ document.querySelectorAll('.timer-picker-item').forEach((item, i) => {
 
 document.getElementById('timerBackdrop').addEventListener('click', e => {
   if (!document.getElementById('timerSheet').contains(e.target)) document.getElementById('timerBackdrop').classList.remove('visible');
+});
+
+document.getElementById('timerCancel')?.addEventListener('click', () => {
+  document.getElementById('timerBackdrop').classList.remove('visible');
 });
 
 document.getElementById('timerStartBtn').addEventListener('click', () => {
@@ -580,24 +625,33 @@ function startTimer(minutes) {
   timerRemaining = timerTotal;
   extraTurns     = 0;
   timerDisplay.style.display = 'flex';
-  timerDisplay.classList.remove('pulsing');
+  timerDisplay.classList.remove('pulsing', 'last-third');
+  // Init ring
+  const progress = document.getElementById('timerRingProgress');
+  if (progress) {
+    progress.style.strokeDasharray  = CIRCUMFERENCE;
+    progress.style.strokeDashoffset = 0;
+  }
   updateTimerDisplay();
 
   timerInterval = setInterval(() => {
     timerRemaining--;
     updateTimerDisplay();
 
-    const elapsed  = timerTotal - timerRemaining;
-    const third    = timerTotal / 3;
+    const third = timerTotal / 3;
 
-    // Pulse at 1/3 and 2/3 elapsed
-    if (elapsed === Math.round(third) || elapsed === Math.round(2 * third)) {
-      haptic.tick && navigator.vibrate?.([80, 60, 80, 60, 80]);
+    // Vibrate when crossing exact 1/3 thresholds of remaining time
+    // 2/3 remaining = 1/3 elapsed, 1/3 remaining = 2/3 elapsed
+    const twoThirds = Math.round(timerTotal * 2 / 3);
+    const oneThird  = Math.round(timerTotal / 3);
+
+    if (timerRemaining === twoThirds || timerRemaining === oneThird) {
+      navigator.vibrate?.([150, 80, 150, 80, 150]);
       triggerTimerPulse();
     }
 
     // Last third: keep pulsing
-    if (elapsed >= Math.round(2 * third) && !timerDisplay.classList.contains('pulsing')) {
+    if (timerRemaining <= oneThird && !timerDisplay.classList.contains('pulsing')) {
       timerDisplay.classList.add('pulsing');
     }
 
@@ -611,30 +665,47 @@ function startTimer(minutes) {
   }, 1000);
 }
 
+function updateTimerRing() {
+  const progress = document.getElementById('timerRingProgress');
+  if (!progress) return;
+  if (extraTurns > 0) {
+    progress.style.strokeDashoffset = 0;
+    return;
+  }
+  const ratio = timerRemaining / timerTotal;
+  progress.style.strokeDashoffset = -CIRCUMFERENCE * (1 - ratio);
+  timerDisplay.classList.toggle('last-third', timerRemaining <= Math.round(timerTotal / 3));
+}
+
 function triggerTimerPulse() {
   timerDisplay.classList.remove('pulsing');
   void timerDisplay.offsetWidth;
   timerDisplay.classList.add('pulsing');
   setTimeout(() => {
-    if (timerRemaining > timerTotal / 3) timerDisplay.classList.remove('pulsing');
+    if (timerRemaining > Math.round(timerTotal / 3)) timerDisplay.classList.remove('pulsing');
   }, 2000);
 }
 
 function updateTimerDisplay() {
   if (extraTurns > 0) {
     timerText.textContent = extraTurns;
+    updateTimerRing();
     return;
   }
   const m = Math.floor(timerRemaining / 60);
   timerText.textContent = m;
+  updateTimerRing();
 }
 
 function stopTimer() {
   if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
   timerDisplay.style.display = 'none';
-  timerDisplay.classList.remove('pulsing');
+  timerDisplay.classList.remove('pulsing', 'last-third');
   extraTurns = 0;
 }
+
+// ── Extra turns / sudden death state ──────────────────────────────────────
+let suddenDeath = false; // true when extra turns ended tied
 
 // Timer display: click decrements extra turns
 timerDisplay.addEventListener('click', () => {
@@ -642,11 +713,46 @@ timerDisplay.addEventListener('click', () => {
   extraTurns--;
   updateTimerDisplay();
   haptic.button();
+
   if (extraTurns === 0) {
-    // End of extra turns — determine winner by lore
-    timerDisplay.style.display = 'none';
+    // End of 5 extra turns — evaluate result
+    evaluateExtraTurns();
   }
 });
+
+function evaluateExtraTurns() {
+  timerDisplay.style.display = 'none';
+
+  // Compare wins first
+  if (wins[1] !== wins[2]) {
+    const winner = wins[1] > wins[2] ? 1 : 2;
+    showMatchWinner(winner);
+    return;
+  }
+
+  // Same wins — compare lore
+  if (counts[1] !== counts[2]) {
+    const winner = counts[1] > counts[2] ? 1 : 2;
+    showMatchWinner(winner);
+    return;
+  }
+
+  // Totally tied — enter sudden death
+  suddenDeath = true;
+  // Game continues until one player has more lore
+}
+
+function showMatchWinner(winner) {
+  suddenDeath = false;
+  // Show PARABÉNS modal for NOVA RODADA
+  const modalWinner  = document.getElementById('modalWinner');
+  const modalNewGame = document.getElementById('modalNewGame');
+  modalWinner.textContent  = `JOGADOR ${winner} VENCEU A RODADA!`;
+  modalNewGame.textContent = 'NOVA RODADA';
+  modalNewGame.dataset.matchWin = '1';
+  modalNewGame.dataset.winner   = winner;
+  document.getElementById('modalBackdrop').classList.add('visible');
+}
 
 // Desempate button
 document.getElementById('timerDesempateBtn').addEventListener('click', () => {

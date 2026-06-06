@@ -84,6 +84,10 @@
 
     <!-- Timer display (hidden until timer starts) -->
     <div class="timer-display" id="timerDisplay" style="display:none">
+      <svg class="timer-ring" viewBox="0 0 72 72">
+        <circle class="timer-ring__track" cx="36" cy="36" r="32"/>
+        <circle class="timer-ring__progress" id="timerRingProgress" cx="36" cy="36" r="32"/>
+      </svg>
       <span id="timerText">45</span>
     </div>
 
@@ -218,20 +222,34 @@
           <span>JOGADOR 2 CONCEDEU</span>
           <i class="fa-regular fa-square sheet-check-icon"></i>
         </button>
+        <button class="sheet-player-btn restart-concede-btn" data-concede="draw">
+          <span>EMPATAR</span>
+          <i class="fa-regular fa-square sheet-check-icon"></i>
+        </button>
       </div>
-      <button class="sheet-continue" id="restartConfirmBtn">FINALIZAR JOGO</button>
+      <button class="sheet-continue" id="restartConfirmBtn">ZERAR LORE</button>
       <button class="sheet-cancel" id="restartCancel">CANCELAR</button>
     </div>
   </div>
 
   <!-- ── CONCEDE CONFIRM MODAL ── -->
   <div class="modal-backdrop" id="concedeBackdrop">
-    <div class="modal">
+    <div class="modal modal--wide">
       <p class="modal-congrats">CONFIRMAR CONCESSÃO?</p>
       <img class="modal-divider" src="assets/divider.svg" alt=""/>
-      <p class="modal-winner" id="concedeText">Caso confirme o Jogador 2 será o vencedor!</p>
+      <p class="modal-winner" id="concedeText">Caso confirme o Jogador 2 será o vencedor deste jogo!</p>
       <button class="modal-newgame" id="concedeConfirmBtn">CONFIRMAR</button>
       <button class="sheet-cancel" id="concedeCancelBtn" style="margin-top:12px">CANCELAR</button>
+    </div>
+  </div>
+
+  <!-- ── DRAW MODAL ── -->
+  <div class="modal-backdrop" id="drawBackdrop">
+    <div class="modal modal--wide">
+      <p class="modal-congrats">EMPATE!</p>
+      <img class="modal-divider" src="assets/divider.svg" alt=""/>
+      <p class="modal-winner">Os jogadores concordaram com um empate.</p>
+      <button class="modal-newgame" id="drawNewRoundBtn">NOVA RODADA</button>
     </div>
   </div>
 
@@ -263,12 +281,13 @@
         </div>
       </div>
       <button class="sheet-continue" id="timerStartBtn">INICIAR</button>
+      <button class="sheet-cancel" id="timerCancel">CANCELAR</button>
     </div>
   </div>
 
   <!-- ── TIMER END MODAL ── -->
   <div class="modal-backdrop" id="timerEndBackdrop">
-    <div class="modal">
+    <div class="modal modal--wide">
       <p class="modal-congrats">TURNOS EXTRAS</p>
       <img class="modal-divider" src="assets/divider.svg" alt=""/>
       <p class="modal-winner">Iniciar 5 rodadas extras para o desempate.</p>

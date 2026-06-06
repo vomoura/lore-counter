@@ -1,6 +1,6 @@
 {
   "name": "lore-counter",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Disney Lorcana Lore Counter PWA",
   "scripts": {
     "start": "npx serve . -l 3000"
