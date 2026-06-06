@@ -667,6 +667,14 @@ html, body {
 }
 
 /* ── Restart sheet ── */
+/* Height adapts to content, last element stays 32px from screen bottom */
+#restartBackdrop .sheet {
+  height: auto;
+  max-height: calc(100% - 32px);
+  padding-bottom: 32px;
+  overflow-y: auto;
+}
+
 .restart-concede-btn { cursor: pointer; }
 .restart-concede-btn.disabled-btn {
   opacity: 0.35;
@@ -1275,7 +1283,13 @@ html, body {
   text-transform: uppercase;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.15s, box-shadow 0.15s;
+  transition: background 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+
+.sheet-continue:disabled {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
 }
 
 .sheet-continue:active {

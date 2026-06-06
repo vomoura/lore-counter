@@ -360,7 +360,7 @@ let selectedConcede   = null; // 1, 2, or null = just restart
 document.getElementById('fabRestart').addEventListener('click', () => {
   closeFabMenu();
   selectedConcede = null;
-  document.getElementById('restartConfirmBtn').textContent = 'ZERAR LORE';
+  document.getElementById('restartConfirmBtn').disabled = true;
   // Reset selection visuals
   document.querySelectorAll('.restart-concede-btn').forEach(b => {
     b.classList.remove('active', 'disabled-btn');
@@ -369,6 +369,11 @@ document.getElementById('fabRestart').addEventListener('click', () => {
     icon.classList.replace('fa-square-check','fa-square');
   });
   restartBackdrop.classList.add('visible');
+});
+
+document.getElementById('restartZeroBtn').addEventListener('click', () => {
+  restartBackdrop.classList.remove('visible');
+  gameReset();
 });
 
 document.querySelectorAll('.restart-concede-btn').forEach(btn => {
@@ -385,11 +390,9 @@ document.querySelectorAll('.restart-concede-btn').forEach(btn => {
     });
 
     if (alreadyActive) {
-      // Deselect — none selected
       selectedConcede = null;
-      document.getElementById('restartConfirmBtn').textContent = 'ZERAR LORE';
+      document.getElementById('restartConfirmBtn').disabled = true;
     } else {
-      // Select this one, disable others
       selectedConcede = concede;
       btn.classList.add('active');
       const icon = btn.querySelector('.sheet-check-icon');
@@ -398,7 +401,7 @@ document.querySelectorAll('.restart-concede-btn').forEach(btn => {
       document.querySelectorAll('.restart-concede-btn').forEach(b => {
         if (b !== btn) b.classList.add('disabled-btn');
       });
-      document.getElementById('restartConfirmBtn').textContent = 'FINALIZAR JOGO';
+      document.getElementById('restartConfirmBtn').disabled = false;
     }
   });
 });
@@ -559,8 +562,8 @@ const CIRCUMFERENCE = 2 * Math.PI * 32; // r=32 → ~201.06
 document.getElementById('fabTimer').addEventListener('click', () => {
   closeFabMenu();
   document.getElementById('timerBackdrop').classList.add('visible');
-  // Scroll picker to 45min default
-  scrollPickerTo(45);
+  // Scroll to last selected value (default 0 on first open)
+  setTimeout(() => scrollPickerTo(pickerSelected), 50);
 });
 
 // MD buttons
@@ -577,8 +580,8 @@ document.getElementById('timerMd3').addEventListener('click', () => {
 
 // Timer picker scroll
 const picker = document.getElementById('timerPicker');
-const PICKER_VALS = [30, 35, 40, 45, 50, 55, 60];
-let pickerSelected = 45;
+const PICKER_VALS = [0, 30, 35, 40, 45, 50, 55, 60];
+let pickerSelected = 0;
 
 function scrollPickerTo(val) {
   const idx = PICKER_VALS.indexOf(val);
@@ -620,7 +623,12 @@ document.getElementById('timerStartBtn').addEventListener('click', () => {
   document.getElementById('timerBackdrop').classList.remove('visible');
   matchMode = timerMd;
   renderWinPips();
-  startTimer(pickerSelected);
+  if (pickerSelected === 0) {
+    // No timer — just set match mode, no countdown
+    stopTimer();
+  } else {
+    startTimer(pickerSelected);
+  }
 });
 
 function startTimer(minutes) {

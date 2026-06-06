@@ -208,11 +208,14 @@
 
   <!-- ── RESTART SHEET ── -->
   <div class="sheet-backdrop" id="restartBackdrop">
-    <div class="sheet" id="restartSheet">
+    <div class="sheet sheet--auto" id="restartSheet">
       <div class="sheet-handle"></div>
       <p class="sheet-title">REINICIAR JOGO</p>
       <img class="modal-divider" src="assets/divider.svg" alt=""/>
-      <p class="sheet-question">Deseja reiniciar ou algum jogador concedeu?</p>
+      <p class="sheet-question">Deseja apenas zerar a lore?</p>
+      <button class="sheet-continue" id="restartZeroBtn">ZERAR LORE</button>
+      <img class="modal-divider" src="assets/divider.svg" alt="" style="margin-top:16px"/>
+      <p class="sheet-question" style="margin-top:16px">Algum jogador concedeu a vitória ou houve acordo de empate?</p>
       <div class="sheet-players">
         <button class="sheet-player-btn restart-concede-btn" data-concede="1">
           <span>JOGADOR 1 CONCEDEU</span>
@@ -223,11 +226,11 @@
           <i class="fa-regular fa-square sheet-check-icon"></i>
         </button>
         <button class="sheet-player-btn restart-concede-btn" data-concede="draw">
-          <span>EMPATAR</span>
+          <span>ACORDO DE EMPATE</span>
           <i class="fa-regular fa-square sheet-check-icon"></i>
         </button>
       </div>
-      <button class="sheet-continue" id="restartConfirmBtn">ZERAR LORE</button>
+      <button class="sheet-continue" id="restartConfirmBtn" disabled>FINALIZAR JOGO</button>
       <button class="sheet-cancel" id="restartCancel">CANCELAR</button>
     </div>
   </div>
@@ -271,10 +274,11 @@
         <div class="timer-picker-line top"></div>
         <div class="timer-picker-line bot"></div>
         <div class="timer-picker" id="timerPicker">
+          <div class="timer-picker-item active" data-val="0">Sem tempo</div>
           <div class="timer-picker-item" data-val="30">30 minutos</div>
           <div class="timer-picker-item" data-val="35">35 minutos</div>
           <div class="timer-picker-item" data-val="40">40 minutos</div>
-          <div class="timer-picker-item active" data-val="45">45 minutos</div>
+          <div class="timer-picker-item" data-val="45">45 minutos</div>
           <div class="timer-picker-item" data-val="50">50 minutos</div>
           <div class="timer-picker-item" data-val="55">55 minutos</div>
           <div class="timer-picker-item" data-val="60">60 minutos</div>
