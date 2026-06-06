@@ -437,41 +437,45 @@ function showWinnerModal(winner, isMatchWin) {
     modalWinner.textContent  = `JOGADOR ${winner} VENCEU A RODADA!`;
     modalNewGame.textContent = 'NOVA RODADA';
   } else {
-    modalWinner.textContent  = `JOGADOR ${winner} VENCEU O JOGO!`;
-    modalNewGame.textContent = 'NOVO JOGO';
+    // Increment win pip immediately so player sees it filled before clicking
+    wins[winner]++;
+    renderWinPips();
+
+    const winsNeeded = matchMode === 3 ? 2 : 1;
+    if (wins[winner] >= winsNeeded) {
+      // This game win also wins the match — show match win modal
+      modalWinner.textContent  = `JOGADOR ${winner} VENCEU A RODADA!`;
+      modalNewGame.textContent = 'NOVA RODADA';
+      modalNewGame.dataset.matchWin = '1';
+    } else {
+      modalWinner.textContent  = `JOGADOR ${winner} VENCEU O JOGO!`;
+      modalNewGame.textContent = 'PRÓXIMO JOGO';
+      modalNewGame.dataset.matchWin = '0';
+    }
   }
-  modalNewGame.dataset.matchWin = isMatchWin ? '1' : '0';
-  modalNewGame.dataset.winner   = winner;
+
+  modalNewGame.dataset.winner = winner;
   document.getElementById('modalBackdrop').classList.add('visible');
 }
 
 document.getElementById('modalNewGame').addEventListener('click', () => {
   document.getElementById('modalBackdrop').classList.remove('visible');
   const isMatchWin = document.getElementById('modalNewGame').dataset.matchWin === '1';
+
   if (isMatchWin) {
-    // Record win and reset game, but not the round
-    const winner = parseInt(document.getElementById('modalNewGame').dataset.winner);
-    wins[winner]++;
-    const winsNeeded = matchMode === 3 ? 2 : 1;
+    // Match won — full reset and open timer for new round
+    wins = { 1: 0, 2: 0 };
     renderWinPips();
-    if (wins[winner] >= winsNeeded) {
-      // Won the full match
-      wins = { 1: 0, 2: 0 };
-      renderWinPips();
-      fullReset();
-      // Open timer setup for new round
-      document.getElementById('timerBackdrop').classList.add('visible');
-    } else {
-      // Next game in match
-      gameReset();
-    }
-  } else {
     fullReset();
+    document.getElementById('timerBackdrop').classList.add('visible');
+  } else {
+    // Next game within match — keep timer running
+    gameReset(true);
   }
 });
 
 // ── Reset helpers ─────────────────────────────────────────────────────────
-function gameReset() {
+function gameReset(keepTimer = false) {
   [1, 2].forEach(p => {
     counts[p] = 0;
     document.getElementById(`count${p}`).textContent = 0;
@@ -481,7 +485,7 @@ function gameReset() {
   history.length = 0;
   [1, 2].forEach(p => { clearTimeout(pendingEntry[p].timer); pendingEntry[p] = { timer: null, delta: 0, scoreBefore: 0 }; });
   updateGameOverState();
-  stopTimer();
+  if (!keepTimer) stopTimer();
 }
 
 function fullReset() {
