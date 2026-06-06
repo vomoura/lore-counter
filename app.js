@@ -316,24 +316,33 @@ document.querySelectorAll('.sheet-player-btn').forEach(btn => {
 // ── Hamburger FAB menu ────────────────────────────────────────────────────
 const btnHamburger = document.getElementById('btnHamburger');
 const fabMenu      = document.getElementById('fabMenu');
+const fabRing      = document.getElementById('fabRing');
 let fabOpen = false;
 
 function closeFabMenu() {
   fabOpen = false;
   fabMenu.classList.remove('open');
   btnHamburger.classList.remove('open');
+  fabRing.classList.remove('open');
 }
 
 btnHamburger.addEventListener('click', () => {
   fabOpen = !fabOpen;
   fabMenu.classList.toggle('open', fabOpen);
   btnHamburger.classList.toggle('open', fabOpen);
+  fabRing.classList.toggle('open', fabOpen);
 });
 
-// Close FAB if clicking outside
+// Close FAB if clicking outside or on the ring
 document.addEventListener('pointerdown', e => {
   if (!fabOpen) return;
-  if (!btnHamburger.contains(e.target) && !fabMenu.contains(e.target)) closeFabMenu();
+  // If clicking the hamburger button itself, let its click handler handle it
+  if (btnHamburger.contains(e.target)) return;
+  if (!fabMenu.contains(e.target)) closeFabMenu();
+});
+
+fabRing.addEventListener('click', () => {
+  if (fabOpen) closeFabMenu();
 });
 
 // ── Restart sheet ─────────────────────────────────────────────────────────

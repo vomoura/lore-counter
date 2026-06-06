@@ -346,24 +346,46 @@ html, body {
   color: #D3BA84;
   font-size: 20px;
   -webkit-tap-highlight-color: transparent;
-  transition: width 0.35s cubic-bezier(0.34,1.56,0.64,1),
-              height 0.35s cubic-bezier(0.34,1.56,0.64,1),
-              background 0.35s ease,
-              border-color 0.35s ease,
-              border-width 0.35s ease,
-              transform 0.35s ease;
+  transition: background 0.35s ease, border-color 0.3s ease;
 }
 
 .btn-hamburger.open {
-  width: 192px;
-  height: 192px;
   background: transparent;
-  border: 2px solid #D3BA84;
-  transform: translateY(-50%);
+  border-color: transparent;
 }
 
 .btn-hamburger:active:not(.open) {
   transform: translateY(-50%) scale(0.88);
+}
+
+/* Remove pseudo-element — ring is now a sibling div */
+.btn-hamburger::before { display: none; }
+
+/* ── FAB ring (expands behind hamburger) ── */
+.fab-ring {
+  position: absolute;
+  right: 44px;   /* 20 + (192-48)/2 = 20+72 = 92 → center at right:44 */
+  top: 50%;
+  width: 0px;
+  height: 0px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(211, 186, 132, 0);
+  transform: translateY(-50%);
+  z-index: 7;
+  pointer-events: none;
+  transition: width 0.35s cubic-bezier(0.34, 1.1, 0.64, 1),
+              height 0.35s cubic-bezier(0.34, 1.1, 0.64, 1),
+              right 0.35s cubic-bezier(0.34, 1.1, 0.64, 1),
+              border-color 0.35s ease;
+}
+
+.fab-ring.open {
+  width: 192px;
+  height: 192px;
+  right: -52px;
+  border-color: #D3BA84;
+  pointer-events: all;
+  cursor: pointer;
 }
 
 /* ── FAB menu (circular) ── */
@@ -375,7 +397,7 @@ html, body {
   width: 48px;
   height: 48px;
   transform: translateY(-50%);
-  z-index: 9;
+  z-index: 11;
   pointer-events: none;
 }
 

@@ -34,3 +34,6 @@
 .fa-square::before       { content: "\f0c8"; }
 .fa-square-check::before { content: "\f14a"; }
 .fa-arrow-up-from-bracket::before { content: "\e09a"; }
+.fa-bars::before         { content: "\f0c9"; }
+.fa-hourglass-start::before { content: "\f251"; }
+.fa-arrow-rotate-left::before { content: "\f2ea"; }
