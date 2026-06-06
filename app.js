@@ -599,7 +599,11 @@ function updatePickerHighlight() {
   });
 }
 
-picker.addEventListener('scroll', updatePickerHighlight);
+picker.addEventListener('scroll', () => {
+  const prev = pickerSelected;
+  updatePickerHighlight();
+  if (pickerSelected !== prev) haptic.tick();
+});
 document.querySelectorAll('.timer-picker-item').forEach((item, i) => {
   item.addEventListener('click', () => scrollPickerTo(PICKER_VALS[i]));
 });
