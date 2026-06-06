@@ -576,6 +576,9 @@ html, body {
   opacity: 0.35;
   pointer-events: none;
 }
+
+/* ── Player label ── */
+.player-label {
   font-size: min(20px, 2.5vh);
   font-weight: 400;
   letter-spacing: 5px;
