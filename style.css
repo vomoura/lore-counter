@@ -666,6 +666,30 @@ html, body {
   font-weight: 400;
 }
 
+/* Exception sheet: height adapts to content */
+#sheetBackdrop .sheet {
+  height: auto;
+  max-height: calc(100% - 32px);
+  padding-bottom: 32px;
+}
+
+/* When collapsed, push sheet down to reveal card above */
+#sheetBackdrop.collapsed .sheet {
+  transform: translateY(35%);
+}
+#timerBackdrop .sheet {
+  height: auto;
+  max-height: calc(100% - 32px);
+  padding-bottom: 32px;
+  overflow-y: auto;
+}
+
+/* Timer picker adapts height inside the auto sheet */
+#timerBackdrop .timer-picker-wrap {
+  height: 132px;
+  flex-shrink: 0;
+}
+
 /* ── Restart sheet ── */
 /* Height adapts to content, last element stays 32px from screen bottom */
 #restartBackdrop .sheet {
