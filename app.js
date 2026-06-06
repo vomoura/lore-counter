@@ -7,62 +7,46 @@ fetch('package.json')
     const el = document.getElementById('splashVersion');
     if (el) el.textContent = `v${pkg.version}`;
   })
-  .catch(() => {}); // silently fail offline
+  .catch(() => {});
 
 // ── Auto-update: reload when SW activates a new version ───────────────────
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', event => {
-    if (event.data?.type === 'SW_UPDATED') {
-      window.location.reload();
-    }
+    if (event.data?.type === 'SW_UPDATED') window.location.reload();
   });
 }
 
 // ── Screen Wake Lock ──────────────────────────────────────────────────────
 let wakeLock = null;
-
 async function requestWakeLock() {
   if (!('wakeLock' in navigator)) return;
-  try {
-    wakeLock = await navigator.wakeLock.request('screen');
-  } catch (err) {
-    // Silently fail — not critical
-  }
+  try { wakeLock = await navigator.wakeLock.request('screen'); } catch (_) {}
 }
-
-// Re-acquire when page becomes visible again (e.g. after tab switch)
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') requestWakeLock();
 });
-
 requestWakeLock();
 
-// ── Splash screen ──────────────────────────────────────────────────────────
-const splashEl = document.getElementById('splash');
+// ── Splash screen ─────────────────────────────────────────────────────────
+const splashEl    = document.getElementById('splash');
 const splashStart = Date.now();
 const MIN_SPLASH_MS = 4000;
-
 function hideSplash() {
-  const elapsed = Date.now() - splashStart;
-  const remaining = Math.max(0, MIN_SPLASH_MS - elapsed);
+  const remaining = Math.max(0, MIN_SPLASH_MS - (Date.now() - splashStart));
   setTimeout(() => splashEl.classList.add('hidden'), remaining);
 }
-
 window.addEventListener('load', hideSplash);
 
 // ── Install prompt ────────────────────────────────────────────────────────
 let deferredInstallPrompt = null;
-const installPromptEl    = document.getElementById('installPrompt');
-const installPromptClose = document.getElementById('installPromptClose');
-const installPromptIos   = document.getElementById('installPromptIos');
+const installPromptEl       = document.getElementById('installPrompt');
+const installPromptClose    = document.getElementById('installPromptClose');
+const installPromptIos      = document.getElementById('installPromptIos');
 const installPromptIosClose = document.getElementById('installPromptIosClose');
 
-// Detect iOS Safari (not already installed as PWA)
-const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches
-  || window.navigator.standalone === true;
+const isIos           = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isInStandalone  = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
-// Android: capture beforeinstallprompt
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredInstallPrompt = e;
@@ -73,12 +57,10 @@ window.addEventListener('beforeinstallprompt', e => {
     }, MIN_SPLASH_MS + 1000);
   }
 });
-
 function hideInstallPrompt() {
   installPromptEl.classList.add('hiding');
   setTimeout(() => installPromptEl.classList.remove('visible', 'hiding'), 500);
 }
-
 installPromptEl.addEventListener('click', async e => {
   if (e.target === installPromptClose) return;
   if (!deferredInstallPrompt) return;
@@ -87,56 +69,65 @@ installPromptEl.addEventListener('click', async e => {
   if (outcome === 'accepted') hideInstallPrompt();
   deferredInstallPrompt = null;
 });
-
 installPromptClose.addEventListener('click', e => {
   e.stopPropagation();
   localStorage.setItem('installDismissed', '1');
   hideInstallPrompt();
 });
-
 window.addEventListener('appinstalled', () => hideInstallPrompt());
 
-// iOS: show manual install instructions
-if (isIos && !isInStandaloneMode && !localStorage.getItem('installDismissedIos')) {
+if (isIos && !isInStandalone && !localStorage.getItem('installDismissedIos')) {
   setTimeout(() => {
     installPromptIos.classList.add('visible');
     setTimeout(() => hideInstallPromptIos(), 10000);
   }, MIN_SPLASH_MS + 1000);
 }
-
 function hideInstallPromptIos() {
   installPromptIos.classList.add('hiding');
   setTimeout(() => installPromptIos.classList.remove('visible', 'hiding'), 500);
 }
-
 installPromptIosClose.addEventListener('click', () => {
   localStorage.setItem('installDismissedIos', '1');
   hideInstallPromptIos();
 });
-// ── State ──────────────────────────────────────────────────────────────────
-const counts = { 1: 0, 2: 0 };
 
-// ── Haptic ─────────────────────────────────────────────────────────────────
-const haptic = {
-  tick:   () => navigator.vibrate?.(10),
-  button: () => navigator.vibrate?.(25),
-};
-
-const MIN_LORE = 0;
-const MAX_LORE = 20;
-
-// ── Exception card state ───────────────────────────────────────────────────
-// donaldOwner[p] = true means player p has the Donald Duck card
-// which means the OPPONENT needs 25 lore to win
+// ── Core state ────────────────────────────────────────────────────────────
+const counts     = { 1: 0, 2: 0 };
+const haptic     = { tick: () => navigator.vibrate?.(10), button: () => navigator.vibrate?.(25) };
+const MIN_LORE   = 0;
+const MAX_LORE   = 20;
 const donaldOwner = { 1: false, 2: false };
 
+// MD / wins state
+let matchMode  = 1;   // 1 = MD1, 3 = MD3
+let wins       = { 1: 0, 2: 0 };
+
 function maxLoreFor(player) {
-  // The opponent of `player` is the one who might have the card
-  const opponent = player === 1 ? 2 : 1;
-  return donaldOwner[opponent] ? 25 : MAX_LORE;
+  const opp = player === 1 ? 2 : 1;
+  return donaldOwner[opp] ? 25 : MAX_LORE;
 }
 
-// ── Update display ─────────────────────────────────────────────────────────
+// ── Win pips ──────────────────────────────────────────────────────────────
+const PIP_SVG = `<svg viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg">
+  <path d="M 110.00 29.00 C 128.00 86.00, 156.00 136.00, 188.00 185.00 C 156.00 214.00, 128.00 242.00, 110.00 263.00 C 92.00 242.00, 64.00 214.00, 32.00 185.00 C 64.00 136.00, 92.00 86.00, 110.00 29.00 Z"/>
+</svg>`;
+
+function renderWinPips() {
+  [1, 2].forEach(p => {
+    const el = document.getElementById(`winPips${p}`);
+    if (!el) return;
+    const total = matchMode === 3 ? 2 : 1;
+    el.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+      const pip = document.createElement('div');
+      pip.className = 'win-pip' + (i < wins[p] ? ' filled' : '');
+      pip.innerHTML = PIP_SVG;
+      el.appendChild(pip);
+    }
+  });
+}
+
+// ── Update display ────────────────────────────────────────────────────────
 function setCount(player, val) {
   const next = Math.max(MIN_LORE, Math.min(maxLoreFor(player), val));
   if (next === counts[player]) return;
@@ -145,10 +136,8 @@ function setCount(player, val) {
 
   const el   = document.getElementById(`count${player}`);
   const drop = el.closest('.symbol-wrap').querySelector('.lore-drop');
-
   el.textContent = next;
 
-  // Register history entry (debounced)
   addHistoryEntry(player, next - prev, prev);
 
   el.classList.remove('bump');
@@ -161,265 +150,159 @@ function setCount(player, val) {
   drop.classList.add('pulse');
   setTimeout(() => drop.classList.remove('pulse'), 320);
 
-  // Update button disabled states
   document.querySelectorAll(`.btn-circle[data-player="${player}"]`).forEach(btn => {
     const delta = parseInt(btn.dataset.delta);
     btn.disabled = (delta < 0 && next <= MIN_LORE) || (delta > 0 && next >= maxLoreFor(player));
   });
 
-  // Check win condition
   updateGameOverState();
 }
 
-// ── Buttons ────────────────────────────────────────────────────────────────
+// ── Buttons ───────────────────────────────────────────────────────────────
 document.querySelectorAll('.btn-circle').forEach(btn => {
   btn.addEventListener('pointerdown', e => {
     e.preventDefault();
-    const player = parseInt(btn.dataset.player);
-    const delta  = parseInt(btn.dataset.delta);
-    setCount(player, counts[player] + delta);
+    setCount(parseInt(btn.dataset.player), counts[parseInt(btn.dataset.player)] + parseInt(btn.dataset.delta));
     haptic.button();
   });
 });
 
-// ── Dial ───────────────────────────────────────────────────────────────────
-const TICK_COUNT   = 48;   // ticks rendered in the strip
-const TICK_GAP     = 13;   // px between ticks
-const STEP_PX      = TICK_GAP; // px of drag per lore step
+// ── Dial ──────────────────────────────────────────────────────────────────
+const TICK_COUNT = 48, TICK_GAP = 13, STEP_PX = TICK_GAP;
 
 function buildTicks(container) {
   container.innerHTML = '';
-  // Render extra ticks on each side so scrolling looks seamless
   const total = TICK_COUNT + 20;
   for (let i = 0; i < total; i++) {
     const t = document.createElement('div');
     t.className = 'dial-tick ' + (i % 5 === 0 ? 'major' : 'minor');
-    // Spread across 140% of the container width so edges are always filled
     t.style.left = `${(i / (total - 1)) * 140 - 20}%`;
     container.appendChild(t);
   }
 }
-
 buildTicks(document.getElementById('dialTicks1'));
 buildTicks(document.getElementById('dialTicks2'));
 
-// Per-dial drag state
-const drag = {
-  1: { active: false, startX: 0, steps: 0 },
-  2: { active: false, startX: 0, steps: 0 },
-};
+const drag = { 1: { active: false, startX: 0, steps: 0 }, 2: { active: false, startX: 0, steps: 0 } };
 
 function scrollTicks(player, offsetPx) {
   const ticks = document.getElementById(`dialTicks${player}`);
-  // Loop the offset within one tick gap for seamless feel
-  const loop = ((offsetPx % TICK_GAP) + TICK_GAP) % TICK_GAP;
+  const loop  = ((offsetPx % TICK_GAP) + TICK_GAP) % TICK_GAP;
   ticks.style.transform = `translateX(${loop - TICK_GAP / 2}px)`;
 }
 
 function setupDial(player) {
   const track = document.getElementById(`dialTrack${player}`);
   const d = drag[player];
-
-  // Player 2's half is rotated 180°, so drag direction is mirrored
   const dir = player === 2 ? -1 : 1;
 
   track.addEventListener('pointerdown', e => {
     e.preventDefault();
     track.setPointerCapture(e.pointerId);
-    d.active = true;
-    d.startX = e.clientX;
-    d.steps  = 0;
+    d.active = true; d.startX = e.clientX; d.steps = 0;
   });
-
   track.addEventListener('pointermove', e => {
     if (!d.active) return;
     e.preventDefault();
-
-    const moved  = (e.clientX - d.startX) * dir;
-    const steps  = Math.trunc(moved / STEP_PX);
-    const delta  = steps - d.steps;
-
-    // Scroll ticks for visual feedback
+    const moved = (e.clientX - d.startX) * dir;
+    const steps = Math.trunc(moved / STEP_PX);
+    const delta = steps - d.steps;
     scrollTicks(player, moved);
-
-    if (delta !== 0) {
-      d.steps = steps;
-      setCount(player, counts[player] + delta);
-      haptic.tick();
-    }
+    if (delta !== 0) { d.steps = steps; setCount(player, counts[player] + delta); haptic.tick(); }
   });
-
-  const onEnd = () => {
-    if (!d.active) return;
-    d.active = false;
-    // Snap ticks back to neutral
-    scrollTicks(player, 0);
-  };
-
+  const onEnd = () => { if (!d.active) return; d.active = false; scrollTicks(player, 0); };
   track.addEventListener('pointerup',     onEnd);
   track.addEventListener('pointercancel', onEnd);
 }
-
 setupDial(1);
 setupDial(2);
 
-// ── Init button states ─────────────────────────────────────────────────────
+// ── Init button states ────────────────────────────────────────────────────
 [1, 2].forEach(player => {
   document.querySelectorAll(`.btn-circle[data-player="${player}"]`).forEach(btn => {
     const delta = parseInt(btn.dataset.delta);
     btn.disabled = (delta < 0 && counts[player] <= MIN_LORE) || (delta > 0 && counts[player] >= maxLoreFor(player));
   });
 });
+renderWinPips();
 
 // ── History log ───────────────────────────────────────────────────────────
 const history = [];
-
-// Debounce state per player: accumulate deltas within 3s window
 const HISTORY_DEBOUNCE_MS = 2000;
-const pendingEntry = {
-  1: { timer: null, delta: 0, scoreBefore: 0 },
-  2: { timer: null, delta: 0, scoreBefore: 0 },
-};
+const pendingEntry = { 1: { timer: null, delta: 0, scoreBefore: 0 }, 2: { timer: null, delta: 0, scoreBefore: 0 } };
 
 function flushHistory(player) {
   const p = pendingEntry[player];
   if (p.delta === 0) return;
-  history.unshift({
-    player,
-    delta: p.delta,
-    scoreBefore: p.scoreBefore,
-    scoreAfter: p.scoreBefore + p.delta,
-  });
-  p.delta = 0;
-  p.timer = null;
+  history.unshift({ player, delta: p.delta, scoreBefore: p.scoreBefore, scoreAfter: p.scoreBefore + p.delta });
+  p.delta = 0; p.timer = null;
 }
-
 function addHistoryEntry(player, delta, scoreBefore) {
   const p = pendingEntry[player];
-
-  if (p.timer === null) {
-    // Start new window
-    p.scoreBefore = scoreBefore;
-    p.delta = delta;
-  } else {
-    // Accumulate within window
-    clearTimeout(p.timer);
-    p.delta += delta;
-  }
-
+  if (p.timer === null) { p.scoreBefore = scoreBefore; p.delta = delta; }
+  else { clearTimeout(p.timer); p.delta += delta; }
   p.timer = setTimeout(() => flushHistory(player), HISTORY_DEBOUNCE_MS);
 }
-
 function renderHistory() {
   const list = document.getElementById('historyList');
-  // Update totals
   document.querySelector('#historyTotal1 strong').textContent = counts[1];
   document.querySelector('#historyTotal2 strong').textContent = counts[2];
-
-  if (history.length === 0) {
-    list.innerHTML = '<p class="history-empty">Nenhum registro ainda.</p>';
-    return;
-  }
-
+  if (history.length === 0) { list.innerHTML = '<p class="history-empty">Nenhum registro ainda.</p>'; return; }
   list.innerHTML = history.map(e => `
     <div class="history-entry">
       <span class="history-entry__player">Jogador ${e.player}</span>
-      <span class="history-entry__delta ${e.delta > 0 ? 'positive' : 'negative'}">
-        ${e.delta > 0 ? '+' : ''}${e.delta}
-      </span>
+      <span class="history-entry__delta ${e.delta > 0 ? 'positive' : 'negative'}">${e.delta > 0 ? '+' : ''}${e.delta}</span>
       <span class="history-entry__score">${e.scoreBefore} → ${e.scoreAfter}</span>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
 const historyBackdrop = document.getElementById('historyBackdrop');
-
-document.getElementById('btnHistory').addEventListener('click', () => {
-  // Flush any pending entries before rendering
-  [1, 2].forEach(p => {
-    clearTimeout(pendingEntry[p].timer);
-    flushHistory(p);
-  });
+document.getElementById('fabHistory').addEventListener('click', () => {
+  closeFabMenu();
+  [1, 2].forEach(p => { clearTimeout(pendingEntry[p].timer); flushHistory(p); });
   renderHistory();
   historyBackdrop.classList.add('visible');
 });
-
-document.getElementById('historyClose').addEventListener('click', () => {
-  historyBackdrop.classList.remove('visible');
-});
-
+document.getElementById('historyClose').addEventListener('click', () => historyBackdrop.classList.remove('visible'));
 historyBackdrop.addEventListener('click', e => {
-  if (!document.getElementById('historySheet').contains(e.target)) {
-    historyBackdrop.classList.remove('visible');
-  }
+  if (!document.getElementById('historySheet').contains(e.target)) historyBackdrop.classList.remove('visible');
 });
 
-// ── Exception bottom sheet ────────────────────────────────────────────────
+// ── Exception sheet ───────────────────────────────────────────────────────
 const sheetBackdrop = document.getElementById('sheetBackdrop');
 const sheetCardImg  = document.getElementById('sheetCardImg');
 
-document.getElementById('btnLore').addEventListener('click', () => {
-  // Sync visual state of player buttons with current donaldOwner state
+document.getElementById('fabException').addEventListener('click', () => {
+  closeFabMenu();
   document.querySelectorAll('.sheet-player-btn').forEach(btn => {
     const player = parseInt(btn.dataset.player);
     const icon   = btn.querySelector('.sheet-check-icon');
-    if (donaldOwner[player]) {
-      btn.classList.add('active');
-      icon.classList.replace('fa-regular', 'fa-solid');
-      icon.classList.replace('fa-square', 'fa-square-check');
-    } else {
-      btn.classList.remove('active');
-      icon.classList.replace('fa-solid', 'fa-regular');
-      icon.classList.replace('fa-square-check', 'fa-square');
-    }
+    if (donaldOwner[player]) { btn.classList.add('active'); icon.classList.replace('fa-regular','fa-solid'); icon.classList.replace('fa-square','fa-square-check'); }
+    else { btn.classList.remove('active'); icon.classList.replace('fa-solid','fa-regular'); icon.classList.replace('fa-square-check','fa-square'); }
   });
   sheetBackdrop.classList.add('visible');
   sheetBackdrop.classList.remove('collapsed');
   sheetCardImg.classList.add('visible');
 });
-
-sheetCardImg.addEventListener('click', (e) => {
+sheetCardImg.addEventListener('click', e => {
   e.stopPropagation();
-  if (sheetBackdrop.classList.contains('collapsed')) {
-    sheetBackdrop.classList.remove('collapsed');
-  } else {
-    sheetBackdrop.classList.add('collapsed');
-  }
+  sheetBackdrop.classList.toggle('collapsed');
 });
-
-function closeSheet() {
-  sheetBackdrop.classList.remove('visible', 'collapsed');
-  sheetCardImg.classList.remove('visible');
-}
-
-sheetBackdrop.addEventListener('click', e => {
-  // Ignore clicks that originated on the card image
-  if (e.target === sheetCardImg) return;
-  if (!document.getElementById('sheet').contains(e.target)) closeSheet();
-});
-
+function closeSheet() { sheetBackdrop.classList.remove('visible', 'collapsed'); sheetCardImg.classList.remove('visible'); }
+sheetBackdrop.addEventListener('click', e => { if (e.target === sheetCardImg) return; if (!document.getElementById('sheet').contains(e.target)) closeSheet(); });
 document.getElementById('sheetContinue').addEventListener('click', closeSheet);
 document.getElementById('sheetCancel').addEventListener('click', closeSheet);
 
-// Player selection in sheet — toggle independently (both can be active)
 document.querySelectorAll('.sheet-player-btn').forEach(btn => {
+  if (!btn.closest('#sheet')) return;
   btn.addEventListener('click', () => {
     const player = parseInt(btn.dataset.player);
     const icon   = btn.querySelector('.sheet-check-icon');
     btn.classList.toggle('active');
     const isActive = btn.classList.contains('active');
-
-    if (isActive) {
-      icon.classList.replace('fa-regular', 'fa-solid');
-      icon.classList.replace('fa-square', 'fa-square-check');
-    } else {
-      icon.classList.replace('fa-solid', 'fa-regular');
-      icon.classList.replace('fa-square-check', 'fa-square');
-    }
-
-    // Update donald ownership and refresh button states
+    if (isActive) { icon.classList.replace('fa-regular','fa-solid'); icon.classList.replace('fa-square','fa-square-check'); }
+    else           { icon.classList.replace('fa-solid','fa-regular'); icon.classList.replace('fa-square-check','fa-square'); }
     donaldOwner[player] = isActive;
-    // Refresh +/- disabled state for both players (limits may have changed)
     [1, 2].forEach(p => {
       document.querySelectorAll(`.btn-circle[data-player="${p}"]`).forEach(b => {
         const delta = parseInt(b.dataset.delta);
@@ -429,24 +312,103 @@ document.querySelectorAll('.sheet-player-btn').forEach(btn => {
     updateGameOverState();
   });
 });
+
+// ── Hamburger FAB menu ────────────────────────────────────────────────────
+const btnHamburger = document.getElementById('btnHamburger');
+const fabMenu      = document.getElementById('fabMenu');
+let fabOpen = false;
+
+function closeFabMenu() {
+  fabOpen = false;
+  fabMenu.classList.remove('open');
+  btnHamburger.classList.remove('open');
+}
+
+btnHamburger.addEventListener('click', () => {
+  fabOpen = !fabOpen;
+  fabMenu.classList.toggle('open', fabOpen);
+  btnHamburger.classList.toggle('open', fabOpen);
+});
+
+// Close FAB if clicking outside
+document.addEventListener('pointerdown', e => {
+  if (!fabOpen) return;
+  if (!btnHamburger.contains(e.target) && !fabMenu.contains(e.target)) closeFabMenu();
+});
+
+// ── Restart sheet ─────────────────────────────────────────────────────────
+const restartBackdrop = document.getElementById('restartBackdrop');
+let selectedConcede   = null; // 1, 2, or null = just restart
+
+document.getElementById('fabRestart').addEventListener('click', () => {
+  closeFabMenu();
+  selectedConcede = null;
+  // Reset selection visuals
+  document.querySelectorAll('.restart-concede-btn').forEach(b => {
+    b.classList.remove('active', 'disabled-btn');
+    const icon = b.querySelector('.sheet-check-icon');
+    icon.classList.replace('fa-solid','fa-regular');
+    icon.classList.replace('fa-square-check','fa-square');
+  });
+  restartBackdrop.classList.add('visible');
+});
+
+document.querySelectorAll('.restart-concede-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const concede = parseInt(btn.dataset.concede);
+    selectedConcede = concede;
+    document.querySelectorAll('.restart-concede-btn').forEach(b => {
+      const isSame = parseInt(b.dataset.concede) === concede;
+      const icon   = b.querySelector('.sheet-check-icon');
+      b.classList.toggle('active', isSame);
+      b.classList.toggle('disabled-btn', !isSame);
+      if (isSame) { icon.classList.replace('fa-regular','fa-solid'); icon.classList.replace('fa-square','fa-square-check'); }
+      else        { icon.classList.replace('fa-solid','fa-regular'); icon.classList.replace('fa-square-check','fa-square'); }
+    });
+  });
+});
+
+document.getElementById('restartCancel').addEventListener('click', () => restartBackdrop.classList.remove('visible'));
+restartBackdrop.addEventListener('click', e => {
+  if (!document.getElementById('restartSheet').contains(e.target)) restartBackdrop.classList.remove('visible');
+});
+
+document.getElementById('restartConfirmBtn').addEventListener('click', () => {
+  if (selectedConcede !== null) {
+    // Show concede confirmation
+    const winner = selectedConcede === 1 ? 2 : 1;
+    document.getElementById('concedeText').textContent =
+      `Caso confirme o Jogador ${winner} será o vencedor!`;
+    document.getElementById('concedeBackdrop').classList.add('visible');
+  } else {
+    // Just reset
+    restartBackdrop.classList.remove('visible');
+    fullReset();
+  }
+});
+
+document.getElementById('concedeCancelBtn').addEventListener('click', () => {
+  document.getElementById('concedeBackdrop').classList.remove('visible');
+});
+
+document.getElementById('concedeConfirmBtn').addEventListener('click', () => {
+  document.getElementById('concedeBackdrop').classList.remove('visible');
+  restartBackdrop.classList.remove('visible');
+  const winner = selectedConcede === 1 ? 2 : 1;
+  showWinnerModal(winner, false);
+});
+
+// ── Game over state ───────────────────────────────────────────────────────
 const gameoverWrap = document.getElementById('gameoverWrap');
 
 function updateGameOverState() {
   const winner = counts[1] >= maxLoreFor(1) ? 1 : counts[2] >= maxLoreFor(2) ? 2 : null;
   const loser  = winner === 1 ? 2 : winner === 2 ? 1 : null;
-
   if (winner) {
     document.getElementById(`player${winner}`).classList.add('dimmed', 'winner');
     document.getElementById(`player${loser}`).classList.add('dimmed');
-
-    document.querySelectorAll(`.btn-circle[data-player="${winner}"]`).forEach(btn => {
-      if (parseInt(btn.dataset.delta) < 0) btn.classList.add('keep');
-    });
-
-    document.querySelectorAll(`.btn-circle[data-player="${loser}"]`).forEach(btn => {
-      btn.disabled = true;
-    });
-
+    document.querySelectorAll(`.btn-circle[data-player="${winner}"]`).forEach(btn => { if (parseInt(btn.dataset.delta) < 0) btn.classList.add('keep'); });
+    document.querySelectorAll(`.btn-circle[data-player="${loser}"]`).forEach(btn => { btn.disabled = true; });
     gameoverWrap.classList.add('visible');
   } else {
     [1, 2].forEach(p => {
@@ -463,25 +425,222 @@ function updateGameOverState() {
 
 document.getElementById('gameoverBtn').addEventListener('click', () => {
   const winner = counts[1] >= maxLoreFor(1) ? 1 : 2;
-  document.getElementById('modalWinner').textContent = `JOGADOR ${winner} VENCEU!`;
-  document.getElementById('modalBackdrop').classList.add('visible');
+  showWinnerModal(winner, false);
 });
+
+// ── Winner modal ──────────────────────────────────────────────────────────
+function showWinnerModal(winner, isMatchWin) {
+  const modalWinner  = document.getElementById('modalWinner');
+  const modalNewGame = document.getElementById('modalNewGame');
+
+  if (isMatchWin) {
+    modalWinner.textContent  = `JOGADOR ${winner} VENCEU A RODADA!`;
+    modalNewGame.textContent = 'NOVA RODADA';
+  } else {
+    modalWinner.textContent  = `JOGADOR ${winner} VENCEU O JOGO!`;
+    modalNewGame.textContent = 'NOVO JOGO';
+  }
+  modalNewGame.dataset.matchWin = isMatchWin ? '1' : '0';
+  modalNewGame.dataset.winner   = winner;
+  document.getElementById('modalBackdrop').classList.add('visible');
+}
 
 document.getElementById('modalNewGame').addEventListener('click', () => {
   document.getElementById('modalBackdrop').classList.remove('visible');
-  // Reset scores
+  const isMatchWin = document.getElementById('modalNewGame').dataset.matchWin === '1';
+  if (isMatchWin) {
+    // Record win and reset game, but not the round
+    const winner = parseInt(document.getElementById('modalNewGame').dataset.winner);
+    wins[winner]++;
+    const winsNeeded = matchMode === 3 ? 2 : 1;
+    renderWinPips();
+    if (wins[winner] >= winsNeeded) {
+      // Won the full match
+      wins = { 1: 0, 2: 0 };
+      renderWinPips();
+      fullReset();
+      // Open timer setup for new round
+      document.getElementById('timerBackdrop').classList.add('visible');
+    } else {
+      // Next game in match
+      gameReset();
+    }
+  } else {
+    fullReset();
+  }
+});
+
+// ── Reset helpers ─────────────────────────────────────────────────────────
+function gameReset() {
   [1, 2].forEach(p => {
     counts[p] = 0;
     document.getElementById(`count${p}`).textContent = 0;
   });
-  // Reset donald card effect
   donaldOwner[1] = false;
   donaldOwner[2] = false;
-  // Clear history and pending entries
   history.length = 0;
-  [1, 2].forEach(p => {
-    clearTimeout(pendingEntry[p].timer);
-    pendingEntry[p] = { timer: null, delta: 0, scoreBefore: 0 };
-  });
+  [1, 2].forEach(p => { clearTimeout(pendingEntry[p].timer); pendingEntry[p] = { timer: null, delta: 0, scoreBefore: 0 }; });
   updateGameOverState();
+  stopTimer();
+}
+
+function fullReset() {
+  gameReset();
+  wins   = { 1: 0, 2: 0 };
+  matchMode = 1;
+  renderWinPips();
+}
+
+// ── Timer ─────────────────────────────────────────────────────────────────
+let timerInterval   = null;
+let timerRemaining  = 0;   // seconds
+let timerTotal      = 0;   // seconds
+let timerMd         = 1;
+let extraTurns      = 0;   // 0 = not in extra turns mode
+const timerDisplay  = document.getElementById('timerDisplay');
+const timerText     = document.getElementById('timerText');
+
+// Timer setup sheet
+document.getElementById('fabTimer').addEventListener('click', () => {
+  closeFabMenu();
+  document.getElementById('timerBackdrop').classList.add('visible');
+  // Scroll picker to 45min default
+  scrollPickerTo(45);
+});
+
+// MD buttons
+document.getElementById('timerMd1').addEventListener('click', () => {
+  timerMd = 1;
+  document.getElementById('timerMd1').classList.add('active');
+  document.getElementById('timerMd3').classList.remove('active');
+});
+document.getElementById('timerMd3').addEventListener('click', () => {
+  timerMd = 3;
+  document.getElementById('timerMd3').classList.add('active');
+  document.getElementById('timerMd1').classList.remove('active');
+});
+
+// Timer picker scroll
+const picker = document.getElementById('timerPicker');
+const PICKER_VALS = [30, 35, 40, 45, 50, 55, 60];
+let pickerSelected = 45;
+
+function scrollPickerTo(val) {
+  const idx = PICKER_VALS.indexOf(val);
+  if (idx < 0) return;
+  const itemH = 60;
+  picker.scrollTop = idx * itemH;
+  updatePickerHighlight();
+}
+
+function updatePickerHighlight() {
+  const itemH  = 60;
+  const center = picker.scrollTop + picker.clientHeight / 2;
+  let closest  = 0;
+  document.querySelectorAll('.timer-picker-item').forEach((item, i) => {
+    const itemCenter = i * itemH + itemH / 2;
+    const dist = Math.abs(center - itemCenter - 60); // 60 = padding
+    item.classList.toggle('active', dist < itemH / 2);
+    if (dist < itemH / 2) { closest = i; pickerSelected = PICKER_VALS[i]; }
+  });
+}
+
+picker.addEventListener('scroll', updatePickerHighlight);
+document.querySelectorAll('.timer-picker-item').forEach((item, i) => {
+  item.addEventListener('click', () => scrollPickerTo(PICKER_VALS[i]));
+});
+
+document.getElementById('timerBackdrop').addEventListener('click', e => {
+  if (!document.getElementById('timerSheet').contains(e.target)) document.getElementById('timerBackdrop').classList.remove('visible');
+});
+
+document.getElementById('timerStartBtn').addEventListener('click', () => {
+  document.getElementById('timerBackdrop').classList.remove('visible');
+  matchMode = timerMd;
+  renderWinPips();
+  startTimer(pickerSelected);
+});
+
+function startTimer(minutes) {
+  stopTimer();
+  timerTotal     = minutes * 60;
+  timerRemaining = timerTotal;
+  extraTurns     = 0;
+  timerDisplay.style.display = 'flex';
+  timerDisplay.classList.remove('pulsing');
+  updateTimerDisplay();
+
+  timerInterval = setInterval(() => {
+    timerRemaining--;
+    updateTimerDisplay();
+
+    const elapsed  = timerTotal - timerRemaining;
+    const third    = timerTotal / 3;
+
+    // Pulse at 1/3 and 2/3 elapsed
+    if (elapsed === Math.round(third) || elapsed === Math.round(2 * third)) {
+      haptic.tick && navigator.vibrate?.([80, 60, 80, 60, 80]);
+      triggerTimerPulse();
+    }
+
+    // Last third: keep pulsing
+    if (elapsed >= Math.round(2 * third) && !timerDisplay.classList.contains('pulsing')) {
+      timerDisplay.classList.add('pulsing');
+    }
+
+    if (timerRemaining <= 0) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      timerDisplay.classList.remove('pulsing');
+      navigator.vibrate?.(3000);
+      document.getElementById('timerEndBackdrop').classList.add('visible');
+    }
+  }, 1000);
+}
+
+function triggerTimerPulse() {
+  timerDisplay.classList.remove('pulsing');
+  void timerDisplay.offsetWidth;
+  timerDisplay.classList.add('pulsing');
+  setTimeout(() => {
+    if (timerRemaining > timerTotal / 3) timerDisplay.classList.remove('pulsing');
+  }, 2000);
+}
+
+function updateTimerDisplay() {
+  if (extraTurns > 0) {
+    timerText.textContent = extraTurns;
+    return;
+  }
+  const m = Math.floor(timerRemaining / 60);
+  timerText.textContent = m;
+}
+
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  timerDisplay.style.display = 'none';
+  timerDisplay.classList.remove('pulsing');
+  extraTurns = 0;
+}
+
+// Timer display: click decrements extra turns
+timerDisplay.addEventListener('click', () => {
+  if (extraTurns <= 0) return;
+  extraTurns--;
+  updateTimerDisplay();
+  haptic.button();
+  if (extraTurns === 0) {
+    // End of extra turns — determine winner by lore
+    timerDisplay.style.display = 'none';
+  }
+});
+
+// Desempate button
+document.getElementById('timerDesempateBtn').addEventListener('click', () => {
+  document.getElementById('timerEndBackdrop').classList.remove('visible');
+  extraTurns = 5;
+  timerDisplay.style.display = 'flex';
+  timerDisplay.classList.remove('pulsing');
+  timerDisplay.style.cursor = 'pointer';
+  updateTimerDisplay();
 });

@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Lorcana Lore Counter</title>
-
-  <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#1C1C1A" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -14,8 +12,6 @@
   <meta name="apple-mobile-web-app-title" content="Lore Counter" />
   <link rel="apple-touch-icon" href="assets/losango_alongado_illuminary_gold.svg" />
   <link rel="icon" href="assets/losango_alongado_illuminary_gold.svg" type="image/svg+xml" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="assets/lato.css" rel="stylesheet" />
   <link rel="stylesheet" href="assets/fa.css" />
   <link rel="stylesheet" href="style.css" />
@@ -56,24 +52,23 @@
   <div class="half half--p2" id="player2">
     <div class="half__inner">
       <div class="counter-row">
-
         <button class="btn-circle" data-player="2" data-delta="-1" aria-label="Decrease Player 2">
           <i class="fa-solid fa-minus"></i>
         </button>
-
         <div class="symbol-wrap">
           <svg class="lore-drop" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 300" fill="none" aria-label="Lore symbol">
             <path fill="#C8B384" fill-rule="evenodd" d="M 110.00 29.00 C 128.00 86.00, 156.00 136.00, 188.00 185.00 C 156.00 214.00, 128.00 242.00, 110.00 263.00 C 92.00 242.00, 64.00 214.00, 32.00 185.00 C 64.00 136.00, 92.00 86.00, 110.00 29.00 Z M 110.00 55.52 C 124.94 102.83, 148.18 144.33, 174.74 185.00 C 148.18 209.07, 124.94 232.31, 110.00 249.74 C 95.06 232.31, 71.82 209.07, 45.26 185.00 C 71.82 144.33, 95.06 102.83, 110.00 55.52 Z M 110.00 75.80 C 122.60 115.70, 142.20 150.70, 164.60 185.00 C 142.20 205.30, 122.60 224.90, 110.00 239.60 C 97.40 224.90, 77.80 205.30, 55.40 185.00 C 77.80 150.70, 97.40 115.70, 110.00 75.80 Z M 110.00 85.16 C 121.52 121.64, 139.44 153.64, 159.92 185.00 C 139.44 203.56, 121.52 221.48, 110.00 234.92 C 98.48 221.48, 80.56 203.56, 60.08 185.00 C 80.56 153.64, 98.48 121.64, 110.00 85.16 Z"/>
           </svg>
           <span class="lore-count" id="count2">0</span>
         </div>
-
         <button class="btn-circle" data-player="2" data-delta="1" aria-label="Increase Player 2">
           <i class="fa-solid fa-plus"></i>
         </button>
-
       </div>
-      <div class="player-label">JOGADOR 2</div>
+      <div class="player-label-row">
+        <div class="win-pips" id="winPips2"></div>
+        <span class="player-label">JOGADOR 2</span>
+      </div>
     </div>
     <div class="dial-wrap">
       <div class="dial-track" id="dialTrack2">
@@ -86,21 +81,35 @@
   <!-- ── DIVIDER ── -->
   <div class="divider">
     <img src="assets/divider.svg" alt="" draggable="false"/>
-    <!-- History button anchored to divider, left side -->
-    <button class="btn-history" id="btnHistory" aria-label="Histórico">
-      <i class="fa-solid fa-clock-rotate-left"></i>
+
+    <!-- Timer display (hidden until timer starts) -->
+    <div class="timer-display" id="timerDisplay" style="display:none">
+      <span id="timerText">45</span>
+    </div>
+
+    <!-- Hamburger menu button -->
+    <button class="btn-hamburger" id="btnHamburger" aria-label="Menu">
+      <i class="fa-solid fa-bars"></i>
     </button>
 
-    <!-- Lore button anchored to divider -->
-    <button class="btn-lore" id="btnLore" aria-label="Lore">
-      <svg class="btn-lore__symbol" viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg">
-        <path fill="#D3BA84" fill-rule="evenodd" d="M 110.00 29.00 C 128.00 86.00, 156.00 136.00, 188.00 185.00 C 156.00 214.00, 128.00 242.00, 110.00 263.00 C 92.00 242.00, 64.00 214.00, 32.00 185.00 C 64.00 136.00, 92.00 86.00, 110.00 29.00 Z"/>
-      </svg>
-      <span class="btn-lore__signs">
-        <span class="btn-lore__plus">+</span>
-        <span class="btn-lore__minus">−</span>
-      </span>
-    </button>
+    <!-- FAB menu (expands on hamburger click) -->
+    <div class="fab-menu" id="fabMenu">
+      <button class="fab-item" id="fabHistory" aria-label="Histórico" data-tooltip="Histórico">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+      </button>
+      <button class="fab-item" id="fabException" aria-label="Efeito do Card" data-tooltip="Efeito do Card">
+        <svg viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg" style="width:22px;height:30px">
+          <path fill="#D3BA84" fill-rule="evenodd" d="M 110.00 29.00 C 128.00 86.00, 156.00 136.00, 188.00 185.00 C 156.00 214.00, 128.00 242.00, 110.00 263.00 C 92.00 242.00, 64.00 214.00, 32.00 185.00 C 64.00 136.00, 92.00 86.00, 110.00 29.00 Z"/>
+        </svg>
+        <span class="fab-signs"><span>+</span><span>−</span></span>
+      </button>
+      <button class="fab-item" id="fabRestart" aria-label="Reiniciar Jogo" data-tooltip="Reiniciar Jogo">
+        <i class="fa-solid fa-rotate-left"></i>
+      </button>
+      <button class="fab-item" id="fabTimer" aria-label="Iniciar Cronômetro" data-tooltip="Cronômetro">
+        <i class="fa-solid fa-stopwatch"></i>
+      </button>
+    </div>
   </div>
 
   <!-- ── GAME OVER BUTTON ── -->
@@ -114,24 +123,23 @@
   <div class="half half--p1" id="player1">
     <div class="half__inner">
       <div class="counter-row">
-
         <button class="btn-circle" data-player="1" data-delta="-1" aria-label="Decrease Player 1">
           <i class="fa-solid fa-minus"></i>
         </button>
-
         <div class="symbol-wrap">
           <svg class="lore-drop" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 300" fill="none" aria-label="Lore symbol">
             <path fill="#C8B384" fill-rule="evenodd" d="M 110.00 29.00 C 128.00 86.00, 156.00 136.00, 188.00 185.00 C 156.00 214.00, 128.00 242.00, 110.00 263.00 C 92.00 242.00, 64.00 214.00, 32.00 185.00 C 64.00 136.00, 92.00 86.00, 110.00 29.00 Z M 110.00 55.52 C 124.94 102.83, 148.18 144.33, 174.74 185.00 C 148.18 209.07, 124.94 232.31, 110.00 249.74 C 95.06 232.31, 71.82 209.07, 45.26 185.00 C 71.82 144.33, 95.06 102.83, 110.00 55.52 Z M 110.00 75.80 C 122.60 115.70, 142.20 150.70, 164.60 185.00 C 142.20 205.30, 122.60 224.90, 110.00 239.60 C 97.40 224.90, 77.80 205.30, 55.40 185.00 C 77.80 150.70, 97.40 115.70, 110.00 75.80 Z M 110.00 85.16 C 121.52 121.64, 139.44 153.64, 159.92 185.00 C 139.44 203.56, 121.52 221.48, 110.00 234.92 C 98.48 221.48, 80.56 203.56, 60.08 185.00 C 80.56 153.64, 98.48 121.64, 110.00 85.16 Z"/>
           </svg>
           <span class="lore-count" id="count1">0</span>
         </div>
-
         <button class="btn-circle" data-player="1" data-delta="1" aria-label="Increase Player 1">
           <i class="fa-solid fa-plus"></i>
         </button>
-
       </div>
-      <div class="player-label">JOGADOR 1</div>
+      <div class="player-label-row">
+        <span class="player-label">JOGADOR 1</span>
+        <div class="win-pips" id="winPips1"></div>
+      </div>
     </div>
     <div class="dial-wrap">
       <div class="dial-track" id="dialTrack1">
@@ -182,12 +190,86 @@
     </div>
   </div>
 
+  <!-- ── RESTART SHEET ── -->
+  <div class="sheet-backdrop" id="restartBackdrop">
+    <div class="sheet" id="restartSheet">
+      <div class="sheet-handle"></div>
+      <p class="sheet-title">REINICIAR JOGO</p>
+      <img class="modal-divider" src="assets/divider.svg" alt=""/>
+      <p class="sheet-question">Deseja reiniciar ou algum jogador concedeu?</p>
+      <div class="sheet-players">
+        <button class="sheet-player-btn restart-concede-btn" data-concede="1">
+          <span>JOGADOR 1 CONCEDEU</span>
+          <i class="fa-regular fa-square sheet-check-icon"></i>
+        </button>
+        <button class="sheet-player-btn restart-concede-btn" data-concede="2">
+          <span>JOGADOR 2 CONCEDEU</span>
+          <i class="fa-regular fa-square sheet-check-icon"></i>
+        </button>
+      </div>
+      <button class="sheet-continue" id="restartConfirmBtn">FINALIZAR JOGO</button>
+      <button class="sheet-cancel" id="restartCancel">CANCELAR</button>
+    </div>
+  </div>
+
+  <!-- ── CONCEDE CONFIRM MODAL ── -->
+  <div class="modal-backdrop" id="concedeBackdrop">
+    <div class="modal">
+      <p class="modal-congrats">CONFIRMAR CONCESSÃO?</p>
+      <img class="modal-divider" src="assets/divider.svg" alt=""/>
+      <p class="modal-winner" id="concedeText">Caso confirme o Jogador 2 será o vencedor!</p>
+      <button class="modal-newgame" id="concedeConfirmBtn">CONFIRMAR</button>
+      <button class="sheet-cancel" id="concedeCancelBtn" style="margin-top:12px">CANCELAR</button>
+    </div>
+  </div>
+
+  <!-- ── TIMER SETUP SHEET ── -->
+  <div class="sheet-backdrop" id="timerBackdrop">
+    <div class="sheet sheet--tall" id="timerSheet">
+      <div class="sheet-handle"></div>
+      <p class="sheet-title">INICIAR RODADA</p>
+      <img class="modal-divider" src="assets/divider.svg" alt=""/>
+      <p class="sheet-question">Selecione Melhor de 1 ou Melhor de 3:</p>
+      <div class="timer-md-row">
+        <button class="timer-md-btn active" id="timerMd1">MD1</button>
+        <button class="timer-md-btn" id="timerMd3">MD3</button>
+      </div>
+      <p class="sheet-question" style="margin-top:16px">Selecione a duração da rodada:</p>
+      <div class="timer-picker-wrap">
+        <div class="timer-picker-fade-top"></div>
+        <div class="timer-picker-fade-bot"></div>
+        <div class="timer-picker-line top"></div>
+        <div class="timer-picker-line bot"></div>
+        <div class="timer-picker" id="timerPicker">
+          <div class="timer-picker-item" data-val="30">30 minutos</div>
+          <div class="timer-picker-item" data-val="35">35 minutos</div>
+          <div class="timer-picker-item" data-val="40">40 minutos</div>
+          <div class="timer-picker-item active" data-val="45">45 minutos</div>
+          <div class="timer-picker-item" data-val="50">50 minutos</div>
+          <div class="timer-picker-item" data-val="55">55 minutos</div>
+          <div class="timer-picker-item" data-val="60">60 minutos</div>
+        </div>
+      </div>
+      <button class="sheet-continue" id="timerStartBtn">INICIAR</button>
+    </div>
+  </div>
+
+  <!-- ── TIMER END MODAL ── -->
+  <div class="modal-backdrop" id="timerEndBackdrop">
+    <div class="modal">
+      <p class="modal-congrats">TURNOS EXTRAS</p>
+      <img class="modal-divider" src="assets/divider.svg" alt=""/>
+      <p class="modal-winner">Iniciar 5 rodadas extras para o desempate.</p>
+      <button class="modal-newgame" id="timerDesempateBtn">DESEMPATE</button>
+    </div>
+  </div>
+
   <!-- ── MODAL PARABÉNS ── -->
   <div class="modal-backdrop" id="modalBackdrop">
     <div class="modal">
       <p class="modal-congrats">PARABÉNS!</p>
       <img class="modal-divider" src="assets/divider.svg" alt=""/>
-      <p class="modal-winner" id="modalWinner">JOGADOR X VENCEU!</p>
+      <p class="modal-winner" id="modalWinner">JOGADOR X VENCEU O JOGO!</p>
       <button class="modal-newgame" id="modalNewGame">NOVO JOGO</button>
     </div>
   </div>
