@@ -38,3 +38,4 @@
 .fa-hourglass-start::before { content: "\f251"; }
 .fa-arrow-rotate-left::before { content: "\f2ea"; }
 .fa-file-lines::before   { content: "\f15c"; }
+.fa-clipboard-list::before { content: "\f46d"; }
