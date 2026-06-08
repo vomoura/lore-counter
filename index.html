@@ -171,12 +171,15 @@
       <div class="sheet-handle"></div>
       <p class="sheet-title">HISTÓRICO</p>
       <img class="modal-divider" src="assets/divider.svg" alt=""/>
-      <div class="history-totals">
-        <span class="history-total" id="historyTotal1">JOGADOR 1: <strong>0</strong></span>
-        <span class="history-total" id="historyTotal2">JOGADOR 2: <strong>0</strong></span>
-      </div>
-      <div class="history-list" id="historyList">
-        <p class="history-empty">Nenhum registro ainda.</p>
+      <div class="history-columns">
+        <div class="history-col">
+          <p class="history-col__label">JOGADOR 1</p>
+          <div class="history-list" id="historyList1"></div>
+        </div>
+        <div class="history-col">
+          <p class="history-col__label">JOGADOR 2</p>
+          <div class="history-list" id="historyList2"></div>
+        </div>
       </div>
       <button class="sheet-cancel" id="historyClose">FECHAR</button>
     </div>
@@ -210,27 +213,37 @@
   <div class="sheet-backdrop" id="restartBackdrop">
     <div class="sheet sheet--auto" id="restartSheet">
       <div class="sheet-handle"></div>
-      <p class="sheet-title">REINICIAR JOGO</p>
-      <img class="modal-divider" src="assets/divider.svg" alt=""/>
-      <p class="sheet-question">Deseja apenas zerar a lore?</p>
-      <button class="sheet-continue" id="restartZeroBtn">ZERAR LORE</button>
-      <img class="modal-divider" src="assets/divider.svg" alt="" style="margin-top:16px"/>
-      <p class="sheet-question" style="margin-top:16px">Algum jogador concedeu a vitória ou houve acordo de empate?</p>
-      <div class="sheet-players">
-        <button class="sheet-player-btn restart-concede-btn" data-concede="1">
-          <span>JOGADOR 1 CONCEDEU</span>
-          <i class="fa-regular fa-square sheet-check-icon"></i>
-        </button>
-        <button class="sheet-player-btn restart-concede-btn" data-concede="2">
-          <span>JOGADOR 2 CONCEDEU</span>
-          <i class="fa-regular fa-square sheet-check-icon"></i>
-        </button>
-        <button class="sheet-player-btn restart-concede-btn" data-concede="draw">
-          <span>ACORDO DE EMPATE</span>
-          <i class="fa-regular fa-square sheet-check-icon"></i>
-        </button>
+
+      <!-- Mode A: in-round (timer active or matchMode set) -->
+      <div id="restartModeRound">
+        <p class="sheet-title">PRÓXIMA PARTIDA</p>
+        <img class="modal-divider" src="assets/divider.svg" alt=""/>
+        <p class="sheet-question">Algum jogador concedeu a vitória ou houve acordo de empate?</p>
+        <div class="sheet-players">
+          <button class="sheet-player-btn restart-concede-btn" data-concede="1">
+            <span>JOGADOR 1 CONCEDEU</span>
+            <i class="fa-regular fa-square sheet-check-icon"></i>
+          </button>
+          <button class="sheet-player-btn restart-concede-btn" data-concede="2">
+            <span>JOGADOR 2 CONCEDEU</span>
+            <i class="fa-regular fa-square sheet-check-icon"></i>
+          </button>
+          <button class="sheet-player-btn restart-concede-btn" data-concede="draw">
+            <span>ACORDO DE EMPATE</span>
+            <i class="fa-regular fa-square sheet-check-icon"></i>
+          </button>
+        </div>
+        <button class="sheet-continue" id="restartConfirmBtn" disabled>FINALIZAR JOGO</button>
       </div>
-      <button class="sheet-continue" id="restartConfirmBtn" disabled>FINALIZAR JOGO</button>
+
+      <!-- Mode B: casual (no round active) -->
+      <div id="restartModeCasual">
+        <p class="sheet-title">REINICIAR JOGO</p>
+        <img class="modal-divider" src="assets/divider.svg" alt=""/>
+        <p class="sheet-question">Deseja zerar os contadores de lore?</p>
+        <button class="sheet-continue" id="restartZeroBtn">ZERAR LORE</button>
+      </div>
+
       <button class="sheet-cancel" id="restartCancel">CANCELAR</button>
     </div>
   </div>

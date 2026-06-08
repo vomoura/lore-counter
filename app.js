@@ -101,6 +101,7 @@ const donaldOwner = { 1: false, 2: false };
 // MD / wins state
 let matchMode  = 1;   // 1 = MD1, 3 = MD3
 let wins       = { 1: 0, 2: 0 };
+let inRound    = false; // true only when a round was started via INICIAR RODADA
 
 function maxLoreFor(player) {
   const opp = player === 1 ? 2 : 1;
@@ -116,6 +117,7 @@ function renderWinPips() {
   [1, 2].forEach(p => {
     const el = document.getElementById(`winPips${p}`);
     if (!el) return;
+    if (!inRound) { el.innerHTML = ''; return; }
     const total = matchMode === 3 ? 2 : 1;
     el.innerHTML = '';
     for (let i = 0; i < total; i++) {
@@ -242,7 +244,7 @@ const pendingEntry = { 1: { timer: null, delta: 0, scoreBefore: 0 }, 2: { timer:
 function flushHistory(player) {
   const p = pendingEntry[player];
   if (p.delta === 0) return;
-  history.unshift({ player, delta: p.delta, scoreBefore: p.scoreBefore, scoreAfter: p.scoreBefore + p.delta });
+  history.push({ player, delta: p.delta, scoreBefore: p.scoreBefore, scoreAfter: p.scoreBefore + p.delta });
   p.delta = 0; p.timer = null;
 }
 function addHistoryEntry(player, delta, scoreBefore) {
@@ -252,16 +254,19 @@ function addHistoryEntry(player, delta, scoreBefore) {
   p.timer = setTimeout(() => flushHistory(player), HISTORY_DEBOUNCE_MS);
 }
 function renderHistory() {
-  const list = document.getElementById('historyList');
-  document.querySelector('#historyTotal1 strong').textContent = counts[1];
-  document.querySelector('#historyTotal2 strong').textContent = counts[2];
-  if (history.length === 0) { list.innerHTML = '<p class="history-empty">Nenhum registro ainda.</p>'; return; }
-  list.innerHTML = history.map(e => `
+  const entryHTML = e => `
     <div class="history-entry">
-      <span class="history-entry__player">Jogador ${e.player}</span>
       <span class="history-entry__delta ${e.delta > 0 ? 'positive' : 'negative'}">${e.delta > 0 ? '+' : ''}${e.delta}</span>
       <span class="history-entry__score">${e.scoreBefore} → ${e.scoreAfter}</span>
-    </div>`).join('');
+    </div>`;
+
+  const empty = '<p class="history-empty">—</p>';
+
+  [1, 2].forEach(p => {
+    const list    = document.getElementById(`historyList${p}`);
+    const entries = history.filter(e => e.player === p);
+    list.innerHTML = entries.length ? entries.map(entryHTML).join('') : empty;
+  });
 }
 
 const historyBackdrop = document.getElementById('historyBackdrop');
@@ -270,6 +275,13 @@ document.getElementById('fabHistory').addEventListener('click', () => {
   [1, 2].forEach(p => { clearTimeout(pendingEntry[p].timer); flushHistory(p); });
   renderHistory();
   historyBackdrop.classList.add('visible');
+  // Scroll both columns to bottom so most recent is visible
+  setTimeout(() => {
+    [1, 2].forEach(p => {
+      const list = document.getElementById(`historyList${p}`);
+      if (list) list.scrollTop = list.scrollHeight;
+    });
+  }, 50);
 });
 document.getElementById('historyClose').addEventListener('click', () => historyBackdrop.classList.remove('visible'));
 historyBackdrop.addEventListener('click', e => {
@@ -368,12 +380,18 @@ document.getElementById('fabRestart').addEventListener('click', () => {
     icon.classList.replace('fa-solid','fa-regular');
     icon.classList.replace('fa-square-check','fa-square');
   });
+
+  // Determine mode: round active = timer running OR matchMode was set via INICIAR RODADA
+  const isInRound = inRound || timerInterval !== null || timerRemaining > 0;
+  document.getElementById('restartModeRound').style.display  = isInRound ? '' : 'none';
+  document.getElementById('restartModeCasual').style.display = isInRound ? 'none' : '';
+
   restartBackdrop.classList.add('visible');
 });
 
 document.getElementById('restartZeroBtn').addEventListener('click', () => {
   restartBackdrop.classList.remove('visible');
-  gameReset();
+  gameReset(true); // keepTimer = true — timer keeps running
 });
 
 document.querySelectorAll('.restart-concede-btn').forEach(btn => {
@@ -543,8 +561,9 @@ function gameReset(keepTimer = false) {
 
 function fullReset() {
   gameReset();
-  wins   = { 1: 0, 2: 0 };
+  wins      = { 1: 0, 2: 0 };
   matchMode = 1;
+  inRound   = false;
   renderWinPips();
 }
 
@@ -554,9 +573,30 @@ let timerRemaining  = 0;
 let timerTotal      = 0;
 let timerMd         = 1;
 let extraTurns      = 0;
+let timerStartedAt  = null; // Date.now() when timer last became active
 const timerDisplay  = document.getElementById('timerDisplay');
 const timerText     = document.getElementById('timerText');
 const CIRCUMFERENCE = 2 * Math.PI * 32; // r=32 → ~201.06
+
+// Re-sync timer when app returns to foreground
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && timerInterval && timerStartedAt !== null) {
+    const elapsed = Math.floor((Date.now() - timerStartedAt) / 1000);
+    timerStartedAt = Date.now();
+    if (elapsed > 0) {
+      timerRemaining = Math.max(0, timerRemaining - elapsed);
+      updateTimerDisplay();
+      // Check if timer expired while in background
+      if (timerRemaining <= 0) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerDisplay.classList.remove('pulsing');
+        navigator.vibrate?.(3000);
+        document.getElementById('timerEndBackdrop').classList.add('visible');
+      }
+    }
+  }
+});
 
 // Timer setup sheet
 document.getElementById('fabTimer').addEventListener('click', () => {
@@ -622,9 +662,9 @@ document.getElementById('timerCancel')?.addEventListener('click', () => {
 document.getElementById('timerStartBtn').addEventListener('click', () => {
   document.getElementById('timerBackdrop').classList.remove('visible');
   matchMode = timerMd;
+  inRound   = true;
   renderWinPips();
   if (pickerSelected === 0) {
-    // No timer — just set match mode, no countdown
     stopTimer();
   } else {
     startTimer(pickerSelected);
@@ -636,6 +676,7 @@ function startTimer(minutes) {
   timerTotal     = minutes * 60;
   timerRemaining = timerTotal;
   extraTurns     = 0;
+  timerStartedAt = Date.now();
   timerDisplay.style.display = 'flex';
   timerDisplay.classList.remove('pulsing', 'last-third');
   // Init ring
@@ -647,6 +688,7 @@ function startTimer(minutes) {
   updateTimerDisplay();
 
   timerInterval = setInterval(() => {
+    timerStartedAt = Date.now();
     timerRemaining--;
     updateTimerDisplay();
 
@@ -711,6 +753,7 @@ function updateTimerDisplay() {
 
 function stopTimer() {
   if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  timerStartedAt = null;
   timerDisplay.style.display = 'none';
   timerDisplay.classList.remove('pulsing', 'last-third');
   extraTurns = 0;
