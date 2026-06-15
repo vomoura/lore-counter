@@ -1,13 +1,9 @@
 'use strict';
 
-// ── Version from package.json ─────────────────────────────────────────────
-fetch('package.json')
-  .then(r => r.json())
-  .then(pkg => {
-    const el = document.getElementById('splashVersion');
-    if (el) el.textContent = `v${pkg.version}`;
-  })
-  .catch(() => {});
+// ── Version ───────────────────────────────────────────────────────────────
+const APP_VERSION = '2.2.0';
+const splashVersionEl = document.getElementById('splashVersion');
+if (splashVersionEl) splashVersionEl.textContent = `v${APP_VERSION}`;
 
 // ── Auto-update: reload when SW activates a new version ───────────────────
 if ('serviceWorker' in navigator) {
