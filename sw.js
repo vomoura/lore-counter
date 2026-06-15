@@ -1,5 +1,6 @@
-const CACHE_NAME = 'lore-counter-v19';
-const BASE = '/lore-counter';
+const CACHE_NAME = 'lore-counter-v20';
+// Detect base path dynamically (works on both GitHub Pages and Vercel)
+const BASE = self.location.pathname.replace(/\/sw\.js$/, '');
 const ASSETS = [
   `${BASE}/`,
   `${BASE}/index.html`,
