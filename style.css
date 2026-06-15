@@ -306,6 +306,7 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 10px;
+  margin-bottom: 8px;
 }
 
 /* Win pips (lore symbols) */
