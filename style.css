@@ -1617,8 +1617,8 @@ html, body {
 
 /* 3D coin */
 .coin-scene {
-  width: 120px;
-  height: 120px;
+  width: 150px;
+  height: 150px;
   perspective: 800px;
   position: relative;
 }
@@ -1648,7 +1648,7 @@ html, body {
 }
 
 .coin__icon {
-  width: 90px;
+  width: 120px;
   height: auto;
   padding-bottom: 4px;
   filter: drop-shadow(0 0 6px rgba(211,186,132,0.5));
@@ -1660,8 +1660,8 @@ html, body {
 }
 
 .coin__hexagon {
-  width: 90px;
-  height: 90px;
+  width: 120px;
+  height: 120px;
 }
 
 /* Coin edge — gives thickness */
