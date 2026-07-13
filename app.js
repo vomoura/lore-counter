@@ -109,7 +109,7 @@ function hideEditIcons() {
 
 document.querySelectorAll('.player-label--editable').forEach(label => {
   label.addEventListener('click', () => {
-    if (gameStarted) return; // no editing once game started
+    if (gameStarted && inRound) return; // no editing once round game started
     const player = parseInt(label.dataset.player);
 
     // Replace label with input
@@ -188,7 +188,7 @@ function renderWinPips() {
 function setCount(player, val) {
   const next = Math.max(MIN_LORE, Math.min(maxLoreFor(player), val));
   if (next === counts[player]) return;
-  if (!gameStarted) { gameStarted = true; hideEditIcons(); }
+  if (!gameStarted && inRound) { gameStarted = true; hideEditIcons(); }
   const prev = counts[player];
   counts[player] = next;
 

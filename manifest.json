@@ -1,6 +1,6 @@
 {
   "name": "Lorcana Lore Counter",
-  "short_name": "Lorcana",
+  "short_name": "Lore Counter",
   "description": "Disney Lorcana Lore Counter",
   "start_url": "./",
   "scope": "./",
