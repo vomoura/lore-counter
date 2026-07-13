@@ -1,7 +1,7 @@
 'use strict';
 
 // ── Version ───────────────────────────────────────────────────────────────
-const APP_VERSION = '2.2.0';
+const APP_VERSION = '3.0.0';
 const splashVersionEl = document.getElementById('splashVersion');
 if (splashVersionEl) splashVersionEl.textContent = `v${APP_VERSION}`;
 
@@ -94,6 +94,65 @@ const MIN_LORE   = 0;
 const MAX_LORE   = 20;
 const donaldOwner = { 1: false, 2: false };
 
+// Player names (editable during session)
+const playerNames = { 1: 'JOGADOR 1', 2: 'JOGADOR 2' };
+
+function getPlayerName(p) { return playerNames[p]; }
+
+// ── Editable player names ─────────────────────────────────────────────────
+let gameStarted = false; // tracks if any game interaction has begun
+
+function hideEditIcons() {
+  document.getElementById('editIcon1')?.classList.add('hidden');
+  document.getElementById('editIcon2')?.classList.add('hidden');
+}
+
+document.querySelectorAll('.player-label--editable').forEach(label => {
+  label.addEventListener('click', () => {
+    if (gameStarted) return; // no editing once game started
+    const player = parseInt(label.dataset.player);
+
+    // Replace label with input
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'player-name-input';
+    input.value = playerNames[player];
+    input.maxLength = 12;
+    input.setAttribute('autocomplete', 'off');
+
+    label.style.display = 'none';
+    const editIcon = document.getElementById(`editIcon${player}`);
+    if (editIcon) editIcon.style.display = 'none';
+    label.parentNode.insertBefore(input, label.nextSibling);
+    input.focus();
+    input.select();
+
+    const commit = () => {
+      const val = input.value.trim().toUpperCase() || `JOGADOR ${player}`;
+      playerNames[player] = val;
+      label.textContent = val;
+      label.style.display = '';
+      if (editIcon) editIcon.style.display = '';
+      input.remove();
+    };
+
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+      if (e.key === 'Escape') { input.value = playerNames[player]; input.blur(); }
+      if (e.key === 'Tab') { e.preventDefault(); input.blur(); }
+    });
+  });
+});
+
+// Also allow clicking the pencil icon to trigger edit
+document.querySelectorAll('.player-edit-icon').forEach(icon => {
+  icon.addEventListener('click', () => {
+    const label = icon.previousElementSibling;
+    if (label) label.click();
+  });
+});
+
 // MD / wins state
 let matchMode  = 1;   // 1 = MD1, 3 = MD3
 let wins       = { 1: 0, 2: 0 };
@@ -129,6 +188,7 @@ function renderWinPips() {
 function setCount(player, val) {
   const next = Math.max(MIN_LORE, Math.min(maxLoreFor(player), val));
   if (next === counts[player]) return;
+  if (!gameStarted) { gameStarted = true; hideEditIcons(); }
   const prev = counts[player];
   counts[player] = next;
 
@@ -260,6 +320,8 @@ function renderHistory() {
 
   [1, 2].forEach(p => {
     const list    = document.getElementById(`historyList${p}`);
+    const label   = list.closest('.history-col').querySelector('.history-col__label');
+    if (label) label.textContent = getPlayerName(p);
     const entries = history.filter(e => e.player === p);
     list.innerHTML = entries.length ? entries.map(entryHTML).join('') : empty;
   });
@@ -361,6 +423,53 @@ fabRing.addEventListener('click', () => {
   if (fabOpen) closeFabMenu();
 });
 
+// ── Theme toggle ──────────────────────────────────────────────────────────
+const btnTheme  = document.getElementById('btnTheme');
+const themeIcon = document.getElementById('themeIcon');
+let darkTheme   = true;
+
+btnTheme.addEventListener('click', () => {
+  darkTheme = !darkTheme;
+  document.querySelector('.app').classList.toggle('theme-light', !darkTheme);
+  themeIcon.classList.toggle('fa-moon', darkTheme);
+  themeIcon.classList.toggle('fa-sun', !darkTheme);
+  // Swap divider SVG
+  const dividerSrc = darkTheme ? 'assets/divider.svg' : 'assets/divider-light.svg';
+  document.querySelectorAll('.divider > img, .modal-divider').forEach(img => {
+    if (img.tagName === 'IMG') img.src = dividerSrc;
+  });
+});
+
+function updateThemeButtonVisibility() {
+  const shouldHide = timerInterval !== null || inRound;
+  btnTheme.classList.toggle('hidden', shouldHide);
+}
+
+// ── About ─────────────────────────────────────────────────────────────────
+const aboutBackdrop = document.getElementById('aboutBackdrop');
+
+document.getElementById('fabAbout').addEventListener('click', () => {
+  closeFabMenu();
+  aboutBackdrop.classList.add('visible');
+});
+
+document.getElementById('aboutClose').addEventListener('click', () => {
+  aboutBackdrop.classList.remove('visible');
+});
+
+aboutBackdrop.addEventListener('click', e => {
+  if (!document.getElementById('aboutSheet').contains(e.target)) aboutBackdrop.classList.remove('visible');
+});
+
+document.getElementById('aboutPixCopy').addEventListener('click', () => {
+  const key = document.getElementById('aboutPixKey').textContent;
+  navigator.clipboard?.writeText(key).then(() => {
+    const fb = document.getElementById('aboutPixFeedback');
+    fb.textContent = 'Chave copiada!';
+    setTimeout(() => fb.textContent = '', 2000);
+  });
+});
+
 // ── Restart sheet ─────────────────────────────────────────────────────────
 const restartBackdrop = document.getElementById('restartBackdrop');
 let selectedConcede   = null; // 1, 2, or null = just restart
@@ -375,9 +484,14 @@ document.getElementById('fabRestart').addEventListener('click', () => {
     const icon = b.querySelector('.sheet-check-icon');
     icon.classList.replace('fa-solid','fa-regular');
     icon.classList.replace('fa-square-check','fa-square');
+    // Update button text with current player names
+    const concede = b.dataset.concede;
+    const span = b.querySelector('span');
+    if (concede === '1') span.textContent = `${getPlayerName(1)} CONCEDEU`;
+    else if (concede === '2') span.textContent = `${getPlayerName(2)} CONCEDEU`;
   });
 
-  // Determine mode: round active = timer running OR matchMode was set via INICIAR RODADA
+  // Determine mode
   const isInRound = inRound || timerInterval !== null || timerRemaining > 0;
   document.getElementById('restartModeRound').style.display  = isInRound ? '' : 'none';
   document.getElementById('restartModeCasual').style.display = isInRound ? 'none' : '';
@@ -444,7 +558,7 @@ document.getElementById('restartConfirmBtn').addEventListener('click', () => {
     // Concede: show confirmation
     const winner = selectedConcede === '1' ? 2 : 1;
     document.getElementById('concedeText').textContent =
-      `Caso confirme o Jogador ${winner} será o vencedor deste jogo!`;
+      `Caso confirme ${getPlayerName(winner)} será o vencedor deste jogo!`;
     document.getElementById('concedeBackdrop').classList.add('visible');
   } else {
     // Just reset scores
@@ -470,13 +584,17 @@ const gameoverWrap = document.getElementById('gameoverWrap');
 function updateGameOverState() {
   const winner = counts[1] >= maxLoreFor(1) ? 1 : counts[2] >= maxLoreFor(2) ? 2 : null;
   const loser  = winner === 1 ? 2 : winner === 2 ? 1 : null;
+  const overlay = document.getElementById('gameoverOverlay');
+
   if (winner) {
+    overlay.classList.add('visible');
     document.getElementById(`player${winner}`).classList.add('dimmed', 'winner');
     document.getElementById(`player${loser}`).classList.add('dimmed');
     document.querySelectorAll(`.btn-circle[data-player="${winner}"]`).forEach(btn => { if (parseInt(btn.dataset.delta) < 0) btn.classList.add('keep'); });
     document.querySelectorAll(`.btn-circle[data-player="${loser}"]`).forEach(btn => { btn.disabled = true; });
     gameoverWrap.classList.add('visible');
   } else {
+    overlay.classList.remove('visible');
     [1, 2].forEach(p => {
       document.getElementById(`player${p}`).classList.remove('dimmed', 'winner');
       document.querySelectorAll(`.btn-circle[data-player="${p}"]`).forEach(btn => {
@@ -500,21 +618,19 @@ function showWinnerModal(winner, isMatchWin) {
   const modalNewGame = document.getElementById('modalNewGame');
 
   if (isMatchWin) {
-    modalWinner.textContent  = `JOGADOR ${winner} VENCEU A RODADA!`;
+    modalWinner.textContent  = `${getPlayerName(winner)} VENCEU A RODADA!`;
     modalNewGame.textContent = 'NOVA RODADA';
   } else {
-    // Increment win pip immediately so player sees it filled before clicking
     wins[winner]++;
     renderWinPips();
 
     const winsNeeded = matchMode === 3 ? 2 : 1;
     if (wins[winner] >= winsNeeded) {
-      // This game win also wins the match — show match win modal
-      modalWinner.textContent  = `JOGADOR ${winner} VENCEU A RODADA!`;
+      modalWinner.textContent  = `${getPlayerName(winner)} VENCEU A RODADA!`;
       modalNewGame.textContent = 'NOVA RODADA';
       modalNewGame.dataset.matchWin = '1';
     } else {
-      modalWinner.textContent  = `JOGADOR ${winner} VENCEU O JOGO!`;
+      modalWinner.textContent  = `${getPlayerName(winner)} VENCEU O JOGO!`;
       modalNewGame.textContent = 'PRÓXIMO JOGO';
       modalNewGame.dataset.matchWin = '0';
     }
@@ -560,8 +676,126 @@ function fullReset() {
   wins      = { 1: 0, 2: 0 };
   matchMode = 1;
   inRound   = false;
+  gameStarted = false;
+  // Show edit icons again
+  document.getElementById('editIcon1')?.classList.remove('hidden');
+  document.getElementById('editIcon2')?.classList.remove('hidden');
+  updateThemeButtonVisibility();
   renderWinPips();
 }
+
+// ── Coin flip ─────────────────────────────────────────────────────────────
+const coinOverlay = document.getElementById('coinOverlay');
+const coinEl      = document.getElementById('coin');
+const coinScene   = document.getElementById('coinScene');
+const coinText    = document.getElementById('coinText');
+const coinResult  = document.getElementById('coinResult');
+const coinHint    = document.getElementById('coinHint');
+
+let coinDragStart = null;
+let coinFlipping  = false;
+let coinCallback  = null; // function to call after coin lands
+
+function showCoinFlip(callback) {
+  coinCallback = callback;
+  coinFlipping = false;
+  coinResult.textContent = '';
+  coinHint.classList.remove('hidden');
+  coinText.textContent = 'Lance a moeda para decidir quem começa jogando';
+  coinEl.style.transform = 'rotateX(0deg)';
+  coinScene.style.transform = 'translateY(0)';
+  coinScene.style.transition = 'none';
+  coinOverlay.classList.add('visible');
+}
+
+function hideCoinFlip() {
+  coinOverlay.classList.remove('visible');
+}
+
+// Drag to flip
+coinOverlay.addEventListener('pointerdown', e => {
+  if (coinFlipping) return;
+  coinDragStart = { y: e.clientY, time: Date.now() };
+  coinOverlay.setPointerCapture(e.pointerId);
+});
+
+coinOverlay.addEventListener('pointerup', e => {
+  if (!coinDragStart || coinFlipping) return;
+
+  const dy   = coinDragStart.y - e.clientY; // positive = upward
+  const dt   = (Date.now() - coinDragStart.time) / 1000;
+  const velocity = dy / dt; // px/s
+
+  coinDragStart = null;
+
+  // Need minimum upward velocity
+  if (dy < 30 || velocity < 200) return;
+
+  coinFlipping = true;
+  coinHint.classList.add('hidden');
+
+  // Physics parameters based on velocity
+  const intensity = Math.min(velocity / 400, 3);
+  const totalRotations = Math.floor(3 + intensity * 4); // half-rotations
+  const hangTime = 0.4 + intensity * 0.25; // faster animation
+  const peakHeight = 50 + intensity * 80;
+
+  // Random result: heads (front/indigo) = player 1, tails (back/kelp) = player 2
+  const isHeads = Math.random() > 0.5;
+  // Front face shows when total rotation is even multiple of 180
+  // Even = front (player 1), Odd = back (player 2)
+  const finalHalfRotations = isHeads
+    ? (totalRotations % 2 === 0 ? totalRotations : totalRotations + 1) // ensure even
+    : (totalRotations % 2 === 1 ? totalRotations : totalRotations + 1); // ensure odd
+  const finalRotation = finalHalfRotations * 180;
+
+  // Animate coin: rise, spin, fall
+  const startTime = Date.now();
+  const duration = hangTime * 2 * 1000; // up + down
+
+  function animateCoin() {
+    const elapsed = Date.now() - startTime;
+    const t = Math.min(elapsed / duration, 1);
+
+    // Parabolic vertical movement: rises then falls
+    const verticalT = 1 - Math.pow(2 * t - 1, 2); // 0→1→0 parabola
+    const translateY = -peakHeight * verticalT;
+
+    // Rotation accelerates then decelerates
+    const rotationT = t < 0.5
+      ? 2 * t * t
+      : 1 - Math.pow(-2 * t + 2, 2) / 2; // ease in-out
+    const currentRotation = finalRotation * rotationT;
+
+    coinScene.style.transform = `translateY(${translateY}px)`;
+    coinEl.style.transform = `rotateX(${currentRotation}deg)`;
+
+    if (t < 1) {
+      requestAnimationFrame(animateCoin);
+    } else {
+      // Land
+      coinFlipping = false;
+      haptic.button();
+      navigator.vibrate?.([50, 30, 50]);
+
+      // Show result
+      // Show result: heads (front) = player 1, tails (back) = player 2
+      const winner = isHeads ? 1 : 2;
+      coinResult.textContent = `${getPlayerName(winner)} COMEÇA!`;
+      coinText.textContent = 'Toque para continuar';
+
+      // Tap to dismiss
+      const dismiss = () => {
+        coinOverlay.removeEventListener('click', dismiss);
+        hideCoinFlip();
+        if (coinCallback) coinCallback();
+      };
+      setTimeout(() => coinOverlay.addEventListener('click', dismiss), 300);
+    }
+  }
+
+  requestAnimationFrame(animateCoin);
+});
 
 // ── Timer ─────────────────────────────────────────────────────────────────
 let timerInterval   = null;
@@ -657,14 +891,20 @@ document.getElementById('timerCancel')?.addEventListener('click', () => {
 
 document.getElementById('timerStartBtn').addEventListener('click', () => {
   document.getElementById('timerBackdrop').classList.remove('visible');
+  if (!gameStarted) { gameStarted = true; hideEditIcons(); }
   matchMode = timerMd;
   inRound   = true;
+  updateThemeButtonVisibility();
   renderWinPips();
-  if (pickerSelected === 0) {
-    stopTimer();
-  } else {
-    startTimer(pickerSelected);
-  }
+
+  // Show coin flip before starting timer
+  showCoinFlip(() => {
+    if (pickerSelected === 0) {
+      stopTimer();
+    } else {
+      startTimer(pickerSelected);
+    }
+  });
 });
 
 function startTimer(minutes) {
@@ -795,10 +1035,9 @@ function evaluateExtraTurns() {
 
 function showMatchWinner(winner) {
   suddenDeath = false;
-  // Show PARABÉNS modal for NOVA RODADA
   const modalWinner  = document.getElementById('modalWinner');
   const modalNewGame = document.getElementById('modalNewGame');
-  modalWinner.textContent  = `JOGADOR ${winner} VENCEU A RODADA!`;
+  modalWinner.textContent  = `${getPlayerName(winner)} VENCEU A RODADA!`;
   modalNewGame.textContent = 'NOVA RODADA';
   modalNewGame.dataset.matchWin = '1';
   modalNewGame.dataset.winner   = winner;

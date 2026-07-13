@@ -66,8 +66,9 @@
         </button>
       </div>
       <div class="player-label-row">
-        <span class="player-label">JOGADOR 2</span>
         <div class="win-pips" id="winPips2"></div>
+        <span class="player-label player-label--editable" data-player="2" id="playerLabel2">JOGADOR 2</span>
+        <i class="fa-solid fa-pencil player-edit-icon" id="editIcon2"></i>
       </div>
     </div>
     <div class="dial-wrap">
@@ -99,6 +100,11 @@
     <!-- Expanding ring (behind hamburger) -->
     <div class="fab-ring" id="fabRing"></div>
 
+    <!-- Theme toggle button (left side, opposite hamburger) -->
+    <button class="btn-theme" id="btnTheme" aria-label="Alternar tema">
+      <i class="fa-solid fa-moon" id="themeIcon"></i>
+    </button>
+
     <!-- Hamburger menu button -->
     <button class="btn-hamburger" id="btnHamburger" aria-label="Menu">
       <i class="fa-solid fa-bars"></i>
@@ -106,27 +112,34 @@
 
     <!-- FAB menu (expands on hamburger click) -->
     <div class="fab-menu" id="fabMenu">
-      <!-- 90° = straight up -->
+      <!-- 90° = straight up (Iniciar Rodada) -->
       <button class="fab-item" id="fabTimer" aria-label="Iniciar Rodada" style="--angle:90deg">
         <i class="fa-solid fa-hourglass-start"></i>
       </button>
-      <!-- 150° = upper-left -->
-      <button class="fab-item" id="fabRestart" aria-label="Reiniciar Jogo" style="--angle:150deg">
+      <!-- 135° = upper-left (Reiniciar Jogo) -->
+      <button class="fab-item" id="fabRestart" aria-label="Reiniciar Jogo" style="--angle:135deg">
         <i class="fa-solid fa-arrow-rotate-left"></i>
       </button>
-      <!-- 210° = lower-left -->
-      <button class="fab-item" id="fabHistory" aria-label="Histórico" style="--angle:210deg">
+      <!-- 180° = left (Histórico) -->
+      <button class="fab-item" id="fabHistory" aria-label="Histórico" style="--angle:180deg">
         <i class="fa-solid fa-clipboard-list"></i>
       </button>
-      <!-- 270° = straight down -->
-      <button class="fab-item" id="fabException" aria-label="Efeito do Card" style="--angle:270deg">
+      <!-- 225° = lower-left (Efeito do Card) -->
+      <button class="fab-item" id="fabException" aria-label="Efeito do Card" style="--angle:225deg">
         <svg viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg" class="fab-lore-icon">
           <path fill="currentColor" fill-rule="evenodd" d="M 110.00 29.00 C 128.00 86.00, 156.00 136.00, 188.00 185.00 C 156.00 214.00, 128.00 242.00, 110.00 263.00 C 92.00 242.00, 64.00 214.00, 32.00 185.00 C 64.00 136.00, 92.00 86.00, 110.00 29.00 Z"/>
         </svg>
         <span class="fab-signs"><span>+</span><span>−</span></span>
       </button>
+      <!-- 270° = straight down (Sobre) -->
+      <button class="fab-item" id="fabAbout" aria-label="Sobre" style="--angle:270deg">
+        <i class="fa-solid fa-question" style="font-size:22px"></i>
+      </button>
     </div>
   </div>
+
+  <!-- ── GAME OVER OVERLAY ── -->
+  <div class="gameover-overlay" id="gameoverOverlay"></div>
 
   <!-- ── GAME OVER BUTTON ── -->
   <div class="gameover-wrap" id="gameoverWrap">
@@ -153,7 +166,8 @@
         </button>
       </div>
       <div class="player-label-row">
-        <span class="player-label">JOGADOR 1</span>
+        <span class="player-label player-label--editable" data-player="1" id="playerLabel1">JOGADOR 1</span>
+        <i class="fa-solid fa-pencil player-edit-icon" id="editIcon1"></i>
         <div class="win-pips" id="winPips1"></div>
       </div>
     </div>
@@ -310,6 +324,55 @@
       <p class="modal-winner">Iniciar 5 rodadas extras para o desempate.</p>
       <button class="modal-newgame" id="timerDesempateBtn">DESEMPATE</button>
     </div>
+  </div>
+
+  <!-- ── ABOUT SHEET ── -->
+  <div class="sheet-backdrop" id="aboutBackdrop">
+    <div class="sheet sheet--auto" id="aboutSheet">
+      <div class="sheet-handle"></div>
+      <p class="sheet-title">SOBRE</p>
+      <img class="modal-divider" src="assets/divider.svg" alt=""/>
+      <p class="sheet-desc" style="margin-top:12px">
+        Lore Counter é um projeto independente criado por mim para a comunidade de Disney Lorcana.
+      </p>
+      <p class="sheet-desc" style="margin-top:8px; font-size:14px; opacity:0.7">
+        Sugestões, bugs ou feedbacks são bem-vindos!
+      </p>
+      <a class="about-whatsapp" href="https://wa.me/5585996936455?text=Oi%2C%20Victor%21%20Estou%20usando%20o%20Lore%20Counter%20e%20tenho%20uma%20sugest%C3%A3o%21" target="_blank" rel="noopener noreferrer">
+        Fala comigo no WhatsApp!
+      </a>
+      <img class="modal-divider" src="assets/divider.svg" alt="" style="margin-top:16px"/>
+      <p class="sheet-question" style="margin-top:12px">Gostou? Me paga um cafezinho! <i class="fa-solid fa-mug-hot"></i></p>
+      <div class="about-pix">
+        <span class="about-pix__label">Chave PIX:</span>
+        <span class="about-pix__key" id="aboutPixKey">cafezinho@victormoura.dev</span>
+        <button class="about-pix__copy" id="aboutPixCopy" aria-label="Copiar chave PIX">
+          <i class="fa-regular fa-copy"></i>
+        </button>
+      </div>
+      <p class="about-pix__feedback" id="aboutPixFeedback"></p>
+      <button class="sheet-cancel" id="aboutClose">FECHAR</button>
+    </div>
+  </div>
+
+  <!-- ── COIN FLIP OVERLAY ── -->
+  <div class="coin-overlay" id="coinOverlay">
+    <p class="coin-text" id="coinText">Lance a moeda para decidir quem começa jogando</p>
+    <div class="coin-result" id="coinResult"></div>
+    <div class="coin-scene" id="coinScene">
+      <div class="coin" id="coin">
+        <div class="coin__edge"></div>
+        <div class="coin__face coin__face--front">
+          <img src="assets/Illuminary Icon_Gold.png" alt="" class="coin__icon"/>
+        </div>
+        <div class="coin__face coin__face--back">
+          <svg class="coin__hexagon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50,5 93,27.5 93,72.5 50,95 7,72.5 7,27.5" fill="none" stroke="#D3BA84" stroke-width="4"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <p class="coin-text" id="coinHint"><i class="fa-solid fa-arrow-up"></i> Arraste para cima</p>
   </div>
 
   <!-- ── MODAL PARABÉNS ── -->

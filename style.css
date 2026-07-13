@@ -245,7 +245,7 @@ html, body {
   position: absolute;
   inset: 0;
   background:
-    url('assets/background.jpg') center center / cover no-repeat;
+    url('assets/background-dark.jpg') center center / cover no-repeat;
   filter: brightness(1.1) saturate(1.0);
   z-index: 0;
 }
@@ -330,6 +330,109 @@ html, body {
 .win-pip.filled svg path {
   fill: #D3BA84;
   stroke: none;
+}
+
+/* ── Theme toggle button (left side of divider) ── */
+.btn-theme {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #1C1C1A;
+  border: 1.2px solid rgba(211, 186, 132, 0.55);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #D3BA84;
+  font-size: 18px;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, transform 0.1s, opacity 0.3s;
+}
+
+.btn-theme:active {
+  transform: translateY(-50%) scale(0.88);
+}
+
+.btn-theme.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Light theme overrides ── */
+.app.theme-light {
+  background: #E3CAA8;
+}
+
+.app.theme-light::after {
+  background: url('assets/background-light.jpg') center center / cover no-repeat;
+  filter: none;
+  opacity: 0.5;
+}
+
+.app.theme-light::before {
+  background: none;
+}
+
+.app.theme-light .lore-count {
+  color: #1C1C1A;
+  text-shadow: none;
+}
+
+.app.theme-light .player-label {
+  color: #1C1C1A;
+  text-shadow: none;
+}
+
+.app.theme-light .btn-circle {
+  color: rgba(28, 28, 26, 0.55);
+}
+
+.app.theme-light .btn-circle:disabled {
+  color: rgba(28, 28, 26, 0.15);
+}
+
+.app.theme-light .btn-theme {
+  background: #E3CAA8;
+  border-color: rgba(28, 28, 26, 0.3);
+  color: #1C1C1A;
+}
+
+.app.theme-light .lore-drop path {
+  fill: #a08d64;
+}
+
+/* Pips in light theme */
+.app.theme-light .win-pip svg path {
+  stroke: #a08d64;
+}
+
+.app.theme-light .win-pip.filled svg path {
+  fill: #a08d64;
+  stroke: none;
+}
+
+/* Divider in light theme — uses separate SVG file */
+
+.app.theme-light .dial-track {
+  background: rgba(28, 28, 26, 0.08);
+  border-color: rgba(28, 28, 26, 0.15);
+}
+
+.app.theme-light .dial-tick {
+  background: rgba(28, 28, 26, 0.15);
+}
+
+.app.theme-light .dial-tick.major {
+  background: rgba(28, 28, 26, 0.35);
+}
+
+.app.theme-light .dial-cursor {
+  background: linear-gradient(to bottom, #1C1C1A, #373B70);
 }
 
 /* ── Hamburger button ── */
@@ -442,32 +545,37 @@ html, body {
   overflow: visible;
 }
 
-/* Open positions using pre-calculated translations */
+/* Open positions: semicircle from top to bottom, left of hamburger */
 .fab-menu.open { pointer-events: all; }
 .fab-menu.open .fab-item { pointer-events: all; opacity: 1; }
 
-/* 90° — straight up */
+/* 1st: straight up (0, -96) */
 .fab-menu.open .fab-item:nth-child(1) {
   transform: translate(calc(-50% + 0px), calc(-50% - 96px)) scale(1);
 }
-/* 150° — upper-left */
+/* 2nd: upper-left (-68, -68) */
 .fab-menu.open .fab-item:nth-child(2) {
-  transform: translate(calc(-50% - 83px), calc(-50% - 48px)) scale(1);
+  transform: translate(calc(-50% - 68px), calc(-50% - 68px)) scale(1);
 }
-/* 210° — lower-left */
+/* 3rd: left (-96, 0) */
 .fab-menu.open .fab-item:nth-child(3) {
-  transform: translate(calc(-50% - 83px), calc(-50% + 48px)) scale(1);
+  transform: translate(calc(-50% - 96px), calc(-50% + 0px)) scale(1);
 }
-/* 270° — straight down */
+/* 4th: lower-left (-68, +68) */
 .fab-menu.open .fab-item:nth-child(4) {
+  transform: translate(calc(-50% - 68px), calc(-50% + 68px)) scale(1);
+}
+/* 5th: straight down (0, +96) */
+.fab-menu.open .fab-item:nth-child(5) {
   transform: translate(calc(-50% + 0px), calc(-50% + 96px)) scale(1);
 }
 
 /* Staggered delays */
 .fab-menu.open .fab-item:nth-child(1) { transition-delay: 0.00s; }
-.fab-menu.open .fab-item:nth-child(2) { transition-delay: 0.05s; }
-.fab-menu.open .fab-item:nth-child(3) { transition-delay: 0.10s; }
-.fab-menu.open .fab-item:nth-child(4) { transition-delay: 0.15s; }
+.fab-menu.open .fab-item:nth-child(2) { transition-delay: 0.04s; }
+.fab-menu.open .fab-item:nth-child(3) { transition-delay: 0.08s; }
+.fab-menu.open .fab-item:nth-child(4) { transition-delay: 0.12s; }
+.fab-menu.open .fab-item:nth-child(5) { transition-delay: 0.16s; }
 
 .fab-item:active { filter: brightness(1.4); }
 
@@ -727,6 +835,59 @@ html, body {
   text-shadow:
     0 0 12px rgba(211,186,132,0.5),
     0 1px 3px rgba(28,28,26,0.8);
+}
+
+/* Editable label — tap to rename */
+.player-label--editable {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  border-bottom: 1px dashed rgba(211, 186, 132, 0.3);
+  padding-bottom: 2px;
+}
+
+.player-label--editable:active {
+  opacity: 0.7;
+}
+
+/* Inline edit input */
+.player-name-input {
+  font-family: 'Lato', sans-serif;
+  font-size: min(20px, 2.5vh);
+  font-weight: 400;
+  letter-spacing: 3px;
+  color: #D3BA84;
+  text-transform: uppercase;
+  text-align: center;
+  background: rgba(28, 28, 26, 0.7);
+  border: 1px solid rgba(211, 186, 132, 0.5);
+  border-radius: 6px;
+  padding: 4px 8px;
+  outline: none;
+  width: 140px;
+  max-width: 60vw;
+}
+
+/* Pencil icon */
+.player-edit-icon {
+  font-size: 12px;
+  color: rgba(211, 186, 132, 0.4);
+  margin-left: 6px;
+  transition: opacity 0.3s ease, width 0.3s ease, margin 0.3s ease;
+  width: 12px;
+  overflow: hidden;
+}
+
+.player-edit-icon.hidden {
+  opacity: 0;
+  width: 0;
+  margin-left: 0;
+  pointer-events: none;
+}
+
+/* Player 2 input — counter-rotate so text is readable */
+.half--p2 .player-name-input {
+  transform: rotate(180deg);
 }
 
 /* ── Counter row ── */
@@ -1124,9 +1285,9 @@ html, body {
 
 /* ── Game over overlay ── */
 
-/* Dim overlay applied to each half when game is over */
-.half.dimmed::before {
-  content: '';
+/* Full-screen overlay that covers everything */
+.gameover-overlay {
+  display: none;
   position: absolute;
   inset: 0;
   background: rgba(28, 28, 26, 0.72);
@@ -1134,17 +1295,21 @@ html, body {
   pointer-events: all;
 }
 
-/* Elements that stay visible above the dim on winner's half */
-.half.dimmed .player-label,
-.half.dimmed .symbol-wrap,
-.half.dimmed .dial-wrap,
-.half.dimmed .btn-circle.keep {
+.gameover-overlay.visible {
+  display: block;
+}
+
+/* Elements that stay visible above the overlay on winner's half */
+.half.dimmed.winner .player-label-row,
+.half.dimmed.winner .symbol-wrap,
+.half.dimmed.winner .dial-wrap,
+.half.dimmed.winner .btn-circle.keep {
   position: relative;
   z-index: 11;
 }
 
 /* On loser's half: everything stays under the overlay */
-.half.dimmed:not(.winner) .player-label,
+.half.dimmed:not(.winner) .player-label-row,
 .half.dimmed:not(.winner) .symbol-wrap,
 .half.dimmed:not(.winner) .dial-wrap,
 .half.dimmed:not(.winner) .btn-circle {
@@ -1405,6 +1570,171 @@ html, body {
 
 .sheet-cancel:active {
   opacity: 1;
+}
+
+/* ── Coin flip ── */
+.coin-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+  background: rgba(28, 28, 26, 0.88);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 60px 24px 80px;
+  touch-action: none;
+  user-select: none;
+}
+
+.coin-overlay.visible {
+  display: flex;
+}
+
+.coin-text {
+  font-family: 'Lato', sans-serif;
+  font-size: 18px;
+  font-weight: 300;
+  color: #E3CAA8;
+  text-align: center;
+  letter-spacing: 1px;
+  max-width: 280px;
+  transition: opacity 0.3s;
+}
+
+.coin-text.hidden { opacity: 0; }
+
+.coin-result {
+  font-family: 'Lato', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #D3BA84;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  text-align: center;
+  min-height: 30px;
+}
+
+/* 3D coin */
+.coin-scene {
+  width: 120px;
+  height: 120px;
+  perspective: 800px;
+  position: relative;
+}
+
+.coin {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.coin__face {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid rgba(211, 186, 132, 0.3);
+}
+
+.coin__face--front {
+  background: #373B70;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.25);
+  transform: translateZ(4px);
+}
+
+.coin__icon {
+  width: 90px;
+  height: auto;
+  padding-bottom: 4px;
+  filter: drop-shadow(0 0 6px rgba(211,186,132,0.5));
+}
+
+.coin__face--back {
+  background: #1C1C1A;
+  transform: rotateX(180deg) translateZ(4px);
+}
+
+.coin__hexagon {
+  width: 90px;
+  height: 90px;
+}
+
+/* Coin edge — gives thickness */
+.coin__edge {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(to bottom, #a08d64, #6a5a30);
+  transform: translateZ(0px);
+}
+
+/* Coin edge (thickness illusion) */
+
+/* ── About sheet ── */
+.about-whatsapp {
+  display: inline-block;
+  margin-top: 10px;
+  font-family: 'Lato', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #D3BA84;
+  text-decoration: underline;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.about-pix {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(28, 28, 26, 0.5);
+  border: 1px solid rgba(211, 186, 132, 0.25);
+  border-radius: 8px;
+  width: 100%;
+}
+
+.about-pix__label {
+  font-family: 'Lato', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(211, 186, 132, 0.55);
+  white-space: nowrap;
+}
+
+.about-pix__key {
+  font-family: 'Lato', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #E3CAA8;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.about-pix__copy {
+  background: transparent;
+  border: none;
+  color: #D3BA84;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.about-pix__feedback {
+  font-family: 'Lato', sans-serif;
+  font-size: 11px;
+  color: #7ecf8e;
+  height: 16px;
+  margin-top: 4px;
+  text-align: center;
 }
 
 /* ── Modal ── */

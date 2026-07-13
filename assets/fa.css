@@ -39,3 +39,11 @@
 .fa-arrow-rotate-left::before { content: "\f2ea"; }
 .fa-file-lines::before   { content: "\f15c"; }
 .fa-clipboard-list::before { content: "\f46d"; }
+.fa-circle-info::before  { content: "\f05a"; }
+.fa-question::before     { content: "\3f"; }
+.fa-mug-hot::before     { content: "\f7b6"; }
+.fa-copy::before        { content: "\f0c5"; }
+.fa-pencil::before      { content: "\f303"; }
+.fa-moon::before        { content: "\f186"; }
+.fa-sun::before         { content: "\f185"; }
+.fa-arrow-up::before    { content: "\f062"; }

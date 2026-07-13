@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lore-counter-v21';
+const CACHE_NAME = 'lore-counter-v22';
 // Detect base path dynamically (works on both GitHub Pages and Vercel)
 const BASE = self.location.pathname.replace(/sw\.js$/, '').replace(/\/$/, '');
 const ASSETS = [
@@ -18,7 +18,9 @@ const ASSETS = [
   `${BASE}/assets/webfonts/fa-regular-400.ttf`,
   `${BASE}/assets/losango_alongado_illuminary_gold.svg`,
   `${BASE}/assets/divider.svg`,
-  `${BASE}/assets/background.jpg`,
+  `${BASE}/assets/divider-light.svg`,
+  `${BASE}/assets/background-dark.jpg`,
+  `${BASE}/assets/background-light.jpg`,
   `${BASE}/assets/exception.png`,
   `${BASE}/assets/DLC_Logo_Medium_RGB.png`,
 ];
